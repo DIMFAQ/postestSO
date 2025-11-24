@@ -3,150 +3,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Study Case Gacha — Drone / IT Labs</title>
+  <title>Study Case Gacha — Semua 8 Kasus (Bahasa Indonesia)</title>
   <style>
     :root{
-      --bg:#0f1724;
-      --card:#0b1220;
+      --bg:#071024;
+      --card:#071427;
       --accent:#60a5fa;
       --muted:#93c5fd33;
       --glass: rgba(255,255,255,0.03);
       --radius:12px;
       --gap:12px;
-      --fw:600;
+      --text:#e6eef8;
+      --muted-text:#9fbdf4;
+      --max-read-width:760px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:linear-gradient(180deg,#071023 0%, #071627 70%); color:#e6eef8}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:linear-gradient(180deg,#071023 0%, #041022 85%); color:var(--text); -webkit-font-smoothing:antialiased}
     .wrap{max-width:1100px;margin:28px auto;padding:18px}
     header{display:flex;gap:12px;align-items:center;justify-content:space-between}
     h1{font-size:18px;margin:0}
     .controls{display:flex;gap:8px;align-items:center}
     button{background:var(--accent);border:0;padding:9px 12px;border-radius:10px;color:#04243a;font-weight:700;cursor:pointer}
-    button.secondary{background:transparent;border:1px solid var(--muted);color:var(--accent);padding:7px 10px;border-radius:10px}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--accent);padding:7px 10px;border-radius:10px}
     button[disabled]{opacity:0.45;cursor:not-allowed}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--gap);margin-top:18px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);min-height:120px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);min-height:120px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .12s}
+    .card:hover{transform:translateY(-6px)}
     .card h3{margin:0 0 8px 0;font-size:15px}
-    .card p{margin:0;font-size:13px;color:#bcd5efcc}
+    .card p{margin:0;font-size:13px;color:#bcd5efcc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tag{font-size:12px;padding:6px 8px;border-radius:999px;background:var(--glass);display:inline-block;margin-right:6px}
     .footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
     .selected{outline:3px solid rgba(96,165,250,0.14);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-    .card-timer{
-      background:rgba(96,165,250,0.12);
-      color:var(--accent);
-      padding:6px 8px;
-      border-radius:999px;
-      font-weight:700;
-      font-size:13px;
-      min-width:64px;
-      text-align:center;
-      margin-left:8px;
-    }
-    /* modal */
+    .card-timer{background:rgba(96,165,250,0.12);color:var(--accent);padding:6px 8px;border-radius:999px;font-weight:700;font-size:13px;min-width:64px;text-align:center;margin-left:8px}
     .modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6), rgba(2,6,23,0.6));backdrop-filter: blur(6px);padding:20px;z-index:50}
-    .modal{max-width:900px;width:100%;background:linear-gradient(180deg, #071124, #041023);border-radius:10px;padding:14px;border:1px solid rgba(255,255,255,0.03)}
-    .steps{margin-top:10px;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;max-height:56vh;overflow:auto}
-    .steps ol{padding-left:18px;margin:0}
-    .steps li{margin:8px 0;padding-left:8px}
+    .modal{max-width:920px;width:100%;background:linear-gradient(180deg, #071124, #041023);border-radius:10px;padding:18px;border:1px solid rgba(255,255,255,0.03)}
+    .steps{margin-top:10px;background:rgba(255,255,255,0.02);padding:14px;border-radius:8px;max-height:64vh;overflow:auto}
     .permTable{margin-top:10px;border-radius:8px;padding:10px;background:rgba(255,255,255,0.02)}
     .permRow{display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px dashed rgba(255,255,255,0.02)}
     .permRow:last-child{border-bottom:0}
-    /* copy modal */
     .copyModalContent{display:flex;flex-direction:column;gap:8px}
     textarea.copyArea{width:100%;min-height:160px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    /* full-screen post-gacha overlay */
-    .overlayFull {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(2,6,23,0.95), rgba(2,6,23,0.98));
-      color: white;
-      display: none;
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 28px;
-    }
-    .overlayCard {
-      max-width:1100px;
-      width:100%;
-      background: linear-gradient(180deg,#071124,#041023);
-      border-radius:12px;
-      padding:26px;
-      border:1px solid rgba(255,255,255,0.04);
-      box-shadow: 0 20px 60px rgba(2,6,23,0.7);
-      text-align: left;
-      color: #e6eef8;
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 18px;
-      align-items: start;
-    }
-    .overlayLeft { padding-right: 8px; }
-    .overlayRight {
-      background: rgba(255,255,255,0.02);
-      padding: 16px;
-      border-radius: 10px;
-      text-align: center;
-    }
-    .overlayCard h2 { margin: 0 0 6px 0; font-size: 20px; }
-    .overlayCard p { color: #cfe7ffcc; margin: 8px 0 12px; }
-    .bigTimer {
-      font-size:36px;
-      font-weight:800;
-      margin:8px 0;
-      color: var(--accent);
-    }
-    .progressBar {
-      height:10px;
-      background:rgba(255,255,255,0.04);
-      border-radius:999px;
-      overflow:hidden;
-      margin-top:8px;
-    }
-    .progressFill {
-      height:100%;
-      width:0%;
-      background: linear-gradient(90deg, rgba(96,165,250,0.9), rgba(96,165,250,0.6));
-      transition: width 0.4s linear;
-    }
-    .overlayControls { display:flex;flex-direction:column;gap:8px;margin-top:10px; }
-    .overlayControls button { width:100%; }
-    .mutedSmall { font-size:13px;color:#9fbdf4 }
-    @media (max-width: 980px) {
-      .overlayCard { grid-template-columns: 1fr; }
-      .overlayRight { order: 2; }
-    }
-    @media (max-width: 520px) {
-      .bigTimer { font-size:28px; }
-    }
-    /* small */
-    @media (max-width: 420px) {
-      .wrap { padding: 10px; }
-      h1 { font-size: 16px; }
-    }
+    .overlayFull{position:fixed;inset:0;background:linear-gradient(180deg,rgba(2,6,23,0.95),rgba(2,6,23,0.98));color:white;display:none;z-index:100;align-items:center;justify-content:center;padding:28px}
+    .overlayCard{max-width:1100px;width:100%;background:linear-gradient(180deg,#071124,#041023);border-radius:12px;padding:26px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(2,6,23,0.7);text-align:left;color:#e6eef8;display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+    .overlayLeft{padding-right:8px; max-width: var(--max-read-width);}
+    .overlayRight{background:rgba(255,255,255,0.02);padding:16px;border-radius:10px;text-align:center;min-height:160px}
+    .overlayCard h2{margin:0 0 6px 0;font-size:20px}
+    .overlayCard p.lead{color:#cfe7ffcc;margin:8px 0 14px;font-size:14px;line-height:1.4}
+    .bigTimer{font-size:36px;font-weight:800;margin:8px 0;color:var(--accent)}
+    .progressBar{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-top:8px}
+    .progressFill{height:100%;width:0%;background:linear-gradient(90deg,rgba(96,165,250,0.9),rgba(96,165,250,0.6));transition:width 0.4s linear}
+    .overlayControls{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .overlayControls button{width:100%}
+    .mutedSmall{font-size:13px;color:#9fbdf4}
+    .descriptionBlock{max-width:100%}
+    /* formatted lists */
+    .desc-ul{margin:8px 0 8px 20px}
+    .desc-ol-alpha{margin:6px 0 6px 28px; list-style-type: lower-alpha;}
+    .desc-par{margin:8px 0;color:#d8eefd;white-space:pre-wrap}
+    @media (max-width:1100px){ .overlayCard{grid-template-columns:1fr 320px} }
+    @media (max-width:900px){ .overlayCard{grid-template-columns:1fr} .overlayRight{order:2} .overlayLeft{max-width:100%} }
+    @media (max-width:520px){ .bigTimer{font-size:28px} .card p{white-space:normal} }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div>
-        <h1>Study Case Gacha — 8 Kasus untuk Praktikum</h1>
-        <div style="color:#9fbdf4;font-size:13px;margin-top:6px">Klik "GACHA" untuk dapatkan study case random. Tekan pada kartu untuk lihat detail dan permission.</div>
+        <h1>Study Case Gacha — 8 Kasus (Bahasa Indonesia)</h1>
+        <div style="color:#9fbdf4;font-size:13px;margin-top:6px">Klik "GACHA" untuk mendapatkan study case acak. Klik kartu untuk lihat detail.</div>
       </div>
-      <div class="controls" role="toolbar" aria-label="controls">
+      <div class="controls" role="toolbar" aria-label="kontrol">
         <div style="display:flex;gap:8px;align-items:center">
           <button id="gachaBtn" type="button">🎲 GACHA</button>
           <span id="gachaTimer" style="font-size:13px;color:#9fbdf4;min-width:80px;text-align:center"></span>
         </div>
-        <button class="secondary" id="pickAgain" type="button">Pick again</button>
-        <button class="secondary" id="exportSelected" type="button">Export JSON</button>
-        <button class="secondary" id="openPermGuide" type="button">Permission Guide</button>
+        <button class="secondary" id="pickAgain" type="button">Pilih lagi</button>
+        <button class="secondary" id="exportSelected" type="button">Ekspor JSON</button>
+        <button class="secondary" id="openPermGuide" type="button">Panduan Semua</button>
       </div>
     </header>
 
     <main>
       <div class="grid" id="grid" role="list"></div>
-
       <div style="margin-top:14px;display:flex;gap:8px;align-items:center">
         <div style="font-size:13px;color:#9fbdf4">Dipilih:</div>
         <div id="pickedLabel" style="font-weight:700;color:var(--accent)">Tidak ada</div>
@@ -154,66 +92,66 @@
     </main>
   </div>
 
-  <!-- existing modals -->
+  <!-- modal -->
   <div class="modalWrap" id="modal" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <h3 id="modalTitle">Title</h3>
-      <div style="display:flex;gap:8px">
-        <button class="secondary" id="copyBtn" type="button">Copy</button>
-        <button id="closeModal" type="button">Close</button>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <h3 id="modalTitle">Judul</h3>
+        <div style="display:flex;gap:8px">
+          <button class="secondary" id="copyBtn" type="button">Salin</button>
+          <button id="closeModal" type="button">Tutup</button>
+        </div>
       </div>
+      <div class="steps" id="modalSteps"></div>
+      <div class="permTable" id="modalPerms"></div>
     </div>
-    <div class="steps" id="modalSteps"></div>
-    <div class="permTable" id="modalPerms"></div>
-  </div>
   </div>
 
+  <!-- permission guide -->
   <div class="modalWrap" id="permGuide" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>Permission Guide — Penjelasan & Contoh</h3>
-      <div>
-        <button class="secondary" id="copyGuide" type="button">Copy All</button>
-        <button id="closeGuide" type="button">Close</button>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Daftar Semua Study Case</h3>
+        <div>
+          <button class="secondary" id="copyGuide" type="button">Salin Semua</button>
+          <button id="closeGuide" type="button">Tutup</button>
+        </div>
+      </div>
+      <div class="steps" style="max-height:60vh;overflow:auto">
+        <div id="guideContent" style="margin-top:8px;white-space:pre-wrap"></div>
       </div>
     </div>
-    <div class="steps" style="max-height:60vh;overflow:auto">
-      <h4>Format: Folder / File — Group — Permission (kata)</h4>
-      <div id="guideContent" style="margin-top:8px"></div>
-    </div>
-  </div>
   </div>
 
+  <!-- copy modal -->
   <div class="modalWrap" id="copyModal" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>Copy (manual)</h3>
-      <div>
-        <button id="closeCopy" type="button">Close</button>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Salin (manual)</h3>
+        <div><button id="closeCopy" type="button">Tutup</button></div>
+      </div>
+      <div class="steps copyModalContent">
+        <div style="font-size:13px;color:#9fbdf4">Jika clipboard diblokir, salin teks di bawah secara manual (Ctrl/Cmd + C)</div>
+        <textarea class="copyArea" id="copyArea" readonly></textarea>
+        <div style="display:flex;gap:8px;justify-content:flex-end"><button id="selectAll" type="button">Pilih Semua</button></div>
       </div>
     </div>
-    <div class="steps copyModalContent">
-      <div style="font-size:13px;color:#9fbdf4">Jika browser memblokir Clipboard API, salin teks di bawah secara manual (Ctrl/Cmd + C)</div>
-      <textarea class="copyArea" id="copyArea" readonly></textarea>
-      <div style="display:flex;gap:8px;justify-content:flex-end"><button id="selectAll" type="button">Select All</button></div>
-    </div>
-  </div>
   </div>
 
-  <!-- NEW: full screen overlay shown immediately after GACHA -->
+  <!-- post-gacha overlay -->
   <div class="overlayFull" id="postGachaOverlay" aria-hidden="true">
     <div class="overlayCard" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
       <div class="overlayLeft">
         <h2 id="overlayTitle">Study Case</h2>
-        <p id="overlaySubtitle">Ini ringkasan study case yang kamu dapatkan.</p>
+        <p class="lead" id="overlaySubtitle">Ringkasan study case yang kamu dapatkan.</p>
 
-        <div class="stepsSummary" id="overlaySummary"></div>
+        <div class="descriptionBlock" id="overlaySummary" aria-live="polite"></div>
 
         <div style="margin-top:12px">
-          <strong>Permissions singkat:</strong>
+          <strong>Potongan penting (jika ada):</strong>
           <div id="overlayPermsShort" style="margin-top:8px"></div>
         </div>
+
       </div>
 
       <div class="overlayRight">
@@ -222,21 +160,231 @@
         <div class="progressBar"><div id="overlayProgress" class="progressFill" style="width:0%"></div></div>
 
         <div class="overlayControls">
-          <button id="startGachaLock" class="bigBtn" style="background:var(--accent);color:#04243a">START</button>
-          <button id="hideOverlay" class="secondary">Hide (keep timer)</button>
-          <button id="stopTimer" class="secondary">Stop (cancel)</button>
+          <button id="startGachaLock" class="bigBtn" style="background:var(--accent);color:#04243a">MULAI</button>
+          <button id="hideOverlay" class="secondary">Sembunyikan (tetap jalan)</button>
+          <button id="stopTimer" class="secondary">Berhenti (batalkan)</button>
         </div>
 
-        <div style="margin-top:8px" class="mutedSmall">Timer akan aktif setelah tekan START. Kamu bisa menutup overlay tanpa menghentikan timer dengan tombol Hide.</div>
+        <div style="margin-top:8px" class="mutedSmall">Timer aktif setelah menekan MULAI. Sembunyikan untuk melihat dashboard — timer tetap berjalan.</div>
       </div>
     </div>
   </div>
 
   <script>
+    // jika mau pakai preview image nanti, path di history:
+    // const PREVIEW_IMAGE = '/mnt/data/Screenshot 2025-11-24 151011.png';
+
     // SETTINGS
-    const GACHA_COOLDOWN_MINUTES = 20; // 20 menit
-    const STORAGE_KEY = 'lastGachaData_v2'; // store {ts, id}
-    // helper clipboard
+    const GACHA_COOLDOWN_MINUTES = 20;
+    const STORAGE_KEY = 'lastGachaData_allcases_v2';
+
+    // STUDY CASES (format {id, title, raw} — ISI sesuai permintaan)
+    const studyCases = [
+`Kasus:
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk sebuah proyek bernama ProjectX. Dalam proyek ini dibutuhkan:
+● Direktori utama ProjectX yang berisi 2 subdirektori: usersetup dan workdir.
+● Tiga grup kolaborasi: Dev, QA, dan Prod.
+● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
+● Di dalam workdir dibuat tiga file (misal fileA.sh, fileB.txt, fileC.log) yang akan diatur izin aksesnya sesuai kebutuhan:
+a. fileA.sh → pemilik: read, write, execute; grup: read, execute; selainnya: read.
+b. fileB.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. fileC.log → pemilik: read, write, execute; grup & lainnya: tidak ada akses.
+● Salah satu user dari grup Dev diatur agar masa berlaku password-nya berakhir setelah 15 hari.
+● Seluruh isi ProjectX kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+
+`Kasus:
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk sebuah projek penelitian drone. Dalam proyek ini dibutuhkan:
+● Direktori utama DroneLab yang berisi 3 subdirektori: firmware, data, logs.
+● Tiga grup kolaborasi: DevTeam, PilotTeam, AnalystTeam.
+● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
+● Di dalam data dibuat tiga file contoh (core.sh, flight.csv, test.log) yang akan diatur izin aksesnya sebagai contoh kebutuhan nyata:
+a. core.sh → pemilik: read, write, execute; grup: read, write; selainnya: tidak ada akses.
+b. flight.csv → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. test.log → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+● Salah satu user dari grup PilotTeam diatur agar masa berlaku password-nya berakhir setelah 20 hari.
+● Seluruh isi DroneLab kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+
+`Kasus:
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk pusat insiden keamanan siber. Dalam proyek ini dibutuhkan:
+● Direktori utama IncidentCenter yang berisi 3 subdirektori: incident, analysis, report.
+● Tiga grup kolaborasi: Responder, Forensic, Manager.
+● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
+● Di dalam incident dan analysis dibuat dua file utama (incident/case001.txt, analysis/findings.txt):
+a. incident/case001.txt → pemilik: read, write; grup: read, write (hanya anggota Responder); selainnya: tidak ada akses.
+b. analysis/findings.txt → pemilik: read, write; grup: read, write (hanya anggota Forensic); selainnya: tidak ada akses.
+c. report/ → direktori publik: pemilik & grup: baca, eksekusi; selainnya: baca.
+● Salah satu user dari grup Forensic diatur agar masa berlaku password-nya berakhir setelah 12 hari.
+● Seluruh isi IncidentCenter kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+
+`Kasus:
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk sistem otomasi pabrik. Dalam proyek ini dibutuhkan:
+● Direktori utama SmartFactory yang berisi 3 subdirektori: sensor, control, maintenance.
+● Tiga grup kolaborasi: SensorTeam, ControlTeam, MaintTeam.
+● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
+● Di dalam control dan maintenance dibuat tiga file contoh (temp.txt, robot.cfg, maint.log):
+a. temp.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. robot.cfg → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. maint.log → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu user dari grup ControlTeam diatur agar masa berlaku password-nya berakhir setelah 30 hari.
+● Seluruh isi SmartFactory kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+
+`Kasus:
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk server editing media. Dalam proyek ini dibutuhkan:
+● Direktori utama MediaStudio yang berisi 3 subdirektori: raw, edit, export.
+● Tiga grup kolaborasi: Editor, Renderer, Producer.
+● Enam pengguna: beberapa user untuk editing dan rendering (2 per grup, username bebas).
+● Di dalam raw, edit, export dibuat tiga file contoh (footage.mp4, timeline.edt, final.mp4):
+a. footage.mp4 → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. timeline.edt → pemilik: read, write; grup: read, write; selainnya: tidak ada akses.
+c. final.mp4 → pemilik: read; grup: read; selainnya: read.
+● Salah satu user dari grup Editor diatur agar masa berlaku password-nya berakhir setelah 25 hari.
+● Seluruh isi MediaStudio kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+
+`Kasus:
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk server rekam medis rumah sakit. Dalam proyek ini dibutuhkan:
+● Direktori utama HosData yang berisi 3 subdirektori: patients, doctors, finance.
+● Tiga grup kolaborasi: MedTeam, DocTeam, FinTeam.
+● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
+● Di dalam patients, doctors, finance dibuat tiga file contoh (list.txt, schedule.txt, salary.csv):
+a. list.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. schedule.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. salary.csv → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu user dari grup FinTeam diatur agar masa berlaku password-nya berakhir setelah 18 hari.
+● Seluruh isi HosData kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+
+`Kasus:
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk platform e-learning. Dalam proyek ini dibutuhkan:
+● Direktori utama ElearnSys yang berisi 3 subdirektori: lectures, assignments, grading.
+● Tiga grup kolaborasi: Teacher, Student, Assessor.
+● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
+● Di dalam assignments dan grading dibuat tiga file contoh (week1.pdf, task1.docx, grade.txt):
+a. week1.pdf → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. task1.docx → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. grade.txt → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu user dari grup Assessor diatur agar masa berlaku password-nya berakhir setelah 10 hari.
+● Seluruh isi ElearnSys kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+
+`Kasus:
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk pengembangan game (GameBuild). Dalam proyek ini dibutuhkan:
+● Direktori utama GameBuild yang berisi 3 subdirektori: source, assets, build.
+● Tiga grup kolaborasi: Coder, Artist, Builder.
+● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
+● Di dalam subdirektori dibuat tiga file contoh (main.cpp, character.png, release.exe) yang akan diatur izin aksesnya sebagai contoh kebutuhan nyata:
+a. main.cpp → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. character.png → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tidak ada akses.
+● Salah satu user dari grup Builder diatur agar masa berlaku password-nya berakhir setelah 20 hari.
+● Seluruh isi GameBuild kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`
+    ];
+
+    // render grid
+    const grid = document.getElementById('grid');
+    function renderGrid(){
+      grid.innerHTML = '';
+      studyCases.forEach((raw, idx)=>{
+        const id = idx+1;
+        const title = `Study Case #${id}`;
+        const c = document.createElement('article');
+        c.className = 'card';
+        c.id = 'sc-'+id;
+        c.innerHTML = `
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <h3>${title}</h3>
+              <span class="tag">#${String(id).padStart(2,'0')}</span>
+            </div>
+            <p>${getPreview(raw)}</p>
+          </div>
+          <div class="footer">
+            <small style="color:#9fbdf4">1 deskripsi</small>
+            <div style="display:flex;align-items:center">
+              <button class="secondary open-btn" data-id="${id}" type="button">Lihat</button>
+            </div>
+          </div>
+        `;
+        c.addEventListener('click',(e)=>{ if(e.target.closest('button')) return; selectCard(id); });
+        const btn = c.querySelector('.open-btn');
+        btn.addEventListener('click',(e)=>{ e.stopPropagation(); openModal(id); selectCard(id); });
+        grid.appendChild(c);
+      });
+    }
+
+    function getPreview(text){
+      const firstLine = text.split('\n').find(l=>l.trim().length>0) || '';
+      return firstLine.length>120 ? firstLine.slice(0,120)+'...' : firstLine;
+    }
+
+    renderGrid();
+
+    // selection
+    let picked = null;
+    const pickedLabel = document.getElementById('pickedLabel');
+    function selectCard(id){
+      document.querySelectorAll('.card').forEach(el=>el.classList.remove('selected'));
+      const el = document.getElementById('sc-'+id);
+      if(el) el.classList.add('selected');
+      picked = { id, title:`Study Case #${id}`, description: studyCases[id-1] };
+      pickedLabel.textContent = picked ? picked.title : 'Tidak ada';
+    }
+
+    // format raw -> HTML (preserve content exactly, convert bullets & letters to lists for display only)
+    function formatRawToHTML(raw){
+      const lines = raw.split('\n').map(l=>l.replace(/\r/g,''));
+      let html = '';
+      let inUl = false;
+      let inAlpha = false;
+      for(let i=0;i<lines.length;i++){
+        const line = lines[i].trim();
+        if(!line){
+          if(inUl){ html += '</ul>'; inUl=false; }
+          if(inAlpha){ html += '</ol>'; inAlpha=false; }
+          continue;
+        }
+        if(line.startsWith('Kasus:')){
+          const rest = line.substring(6).trim();
+          html += `<div class="desc-par"><strong>Kasus:</strong> ${escapeHtml(rest)}</div>`;
+          continue;
+        }
+        if(line.startsWith('●')){
+          if(inAlpha){ html += '</ol>'; inAlpha=false; }
+          if(!inUl){ html += '<ul class="desc-ul">'; inUl=true; }
+          const content = line.replace(/^●\s*/,'').trim();
+          html += `<li>${escapeHtml(content)}</li>`;
+          continue;
+        }
+        if(line.match(/^[a-z]\.\s*/i)){
+          if(inUl){ html += '</ul>'; inUl=false; }
+          if(!inAlpha){ html += '<ol class="desc-ol-alpha">'; inAlpha=true; }
+          const content = line.replace(/^[a-z]\.\s*/i,'').trim();
+          html += `<li>${escapeHtml(content)}</li>`;
+          continue;
+        }
+        if(inUl){ html += '</ul>'; inUl=false; }
+        if(inAlpha){ html += '</ol>'; inAlpha=false; }
+        html += `<div class="desc-par">${escapeHtml(line)}</div>`;
+      }
+      if(inUl) html += '</ul>';
+      if(inAlpha) html += '</ol>';
+      return html;
+    }
+
+    // modal handlers
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSteps = document.getElementById('modalSteps');
+
+    function openModal(id){
+      const raw = studyCases[id-1];
+      modalTitle.textContent = `Study Case #${id}`;
+      modalSteps.innerHTML = formatRawToHTML(raw);
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden','false');
+      setTimeout(()=> document.getElementById('closeModal').focus(), 80);
+    }
+    function closeModalUI(){ modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); }
+    document.getElementById('closeModal').addEventListener('click', ()=> closeModalUI());
+
+    // copy modal
     function showCopyModal(text){
       const modal = document.getElementById('copyModal');
       const area = document.getElementById('copyArea');
@@ -250,192 +398,57 @@
       document.getElementById('copyModal').setAttribute('aria-hidden','true');
     });
     document.getElementById('selectAll').addEventListener('click', ()=>{ document.getElementById('copyArea').select(); });
+
     async function safeCopy(text){
-      try { if(navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); return true; } } catch (err) {}
-      showCopyModal(text); return false;
+      try {
+        if(navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+      } catch (err) {}
+      showCopyModal(text);
+      return false;
     }
 
-    // STUDY CASES (kept full)
-    const studyCases = [
-      {
-        id:1, title: 'DroneLab Research Server',
-        steps: [
-          'Buat direktori DroneLab dengan subfolder firmware, data, dan logs.',
-          'Buat tiga grup DevTeam, PilotTeam, AnalystTeam.',
-          'Tambahkan 6 user; 2 user per grup.',
-          'Buat file contoh core.sh (firmware), flight.csv (data), test.log (logs).',
-          'Atur permission file sesuai kebutuhan tiap tim.',
-          'Atur password expiry untuk pilot1 menjadi 20 hari.',
-          'Verifikasi struktur direktori dan pengaturan password pilot1.'
-        ],
-        perms: [
-          {item:'firmware/','group':'DevTeam','perm':'Read, Write, Execute (folder)'},
-          {item:'core.sh','group':'DevTeam','perm':'Read, Write (file)'},
-          {item:'data/','group':'PilotTeam','perm':'Read, Write, Execute (folder)'},
-          {item:'flight.csv','group':'PilotTeam','perm':'Read, Write (file)'},
-          {item:'logs/','group':'AnalystTeam','perm':'Read, Write, Execute (folder)'},
-          {item:'test.log','group':'AnalystTeam','perm':'Read, Write (file)'}
-        ]
-      },
-      { id:2, title:'CyberSecurity Incident Center', steps:[ 'Buat direktori IncidentCenter: incident, analysis, report.', 'Buat grup Responder, Forensic, Manager.', 'Tambahkan 6 user, 2 tiap grup.', 'Buat file case001.txt, findings.txt, final.pdf.', 'Atur permission: incident (Responder), analysis (Forensic), report (semua).', 'Atur password expiry forensic1 = 15 hari.', 'Verifikasi struktur & chage forensic1.' ], perms:[ {item:'incident/','group':'Responder','perm':'Read, Write, Execute (folder)'},{item:'case001.txt','group':'Responder','perm':'Read, Write (file)'},{item:'analysis/','group':'Forensic','perm':'Read, Write, Execute (folder)'},{item:'findings.txt','group':'Forensic','perm':'Read, Write (file)'},{item:'report/','group':'All Users','perm':'Read, Execute (folder)'},{item:'final.pdf','group':'All Users','perm':'Read (file)'} ] },
-      { id:3, title:'SmartFactory Automation System', steps:[ 'Buat direktori SmartFactory: sensor, control, maintenance.', 'Buat grup SensorTeam, ControlTeam, MaintTeam.', 'Buat 6 user, 2 per grup.', 'Buat temp.txt, robot.cfg, maint.log.', 'Atur permission sesuai operasional pabrik.', 'Atur password expiry control1 = 30 hari.', 'Verifikasi direktori & status password control1.' ], perms:[ {item:'sensor/','group':'SensorTeam','perm':'Read, Write, Execute (folder)'},{item:'temp.txt','group':'SensorTeam','perm':'Read, Write (file)'},{item:'control/','group':'ControlTeam','perm':'Read, Write, Execute (folder)'},{item:'robot.cfg','group':'ControlTeam','perm':'Read, Write (file)'},{item:'maintenance/','group':'MaintTeam','perm':'Read, Write, Execute (folder)'},{item:'maint.log','group':'MaintTeam','perm':'Read, Write (file)'} ] },
-      { id:4, title:'MediaStudio Editing Server', steps:[ 'Buat direktori MediaStudio: raw, edit, export.', 'Buat grup Editor, Renderer, Producer.', 'Tambahkan user: 4 editor/renderer, 2 producer.', 'Buat footage.mp4, timeline.edt, final.mp4.', 'Atur permission: raw (Editor), edit (Editor+Renderer), export (semua).', 'Atur password expiry editor1 = 40 hari.', 'Verifikasi direktori & password editor1.' ], perms:[ {item:'raw/','group':'Editor','perm':'Read, Write, Execute (folder)'},{item:'footage.mp4','group':'Editor','perm':'Read, Write (file)'},{item:'edit/','group':'Editor & Renderer','perm':'Read, Write, Execute (folder)'},{item:'timeline.edt','group':'Editor & Renderer','perm':'Read, Write (file)'},{item:'export/','group':'All Users','perm':'Read, Execute (folder)'},{item:'final.mp4','group':'All Users','perm':'Read (file)'} ] },
-      { id:5, title:'Hospital Medical Records Server', steps:[ 'Buat direktori HosData: patients, doctors, finance.', 'Buat grup MedTeam, DocTeam, FinTeam.', 'Tambahkan 6 user sesuai kelompok.', 'Buat list.txt, schedule.txt, salary.csv.', 'Atur permission: patients (MedTeam), doctors (DocTeam), finance (FinTeam).', 'Atur password expiry fin1 = 25 hari.', 'Verifikasi akses & kadaluarsa fin1.' ], perms:[ {item:'patients/','group':'MedTeam','perm':'Read, Write, Execute (folder)'},{item:'list.txt','group':'MedTeam','perm':'Read, Write (file)'},{item:'doctors/','group':'DocTeam','perm':'Read, Write, Execute (folder)'},{item:'schedule.txt','group':'DocTeam','perm':'Read, Write (file)'},{item:'finance/','group':'FinTeam','perm':'Read, Write, Execute (folder)'},{item:'salary.csv','group':'FinTeam','perm':'Read, Write (file)'} ] },
-      { id:6, title:'E-Learning Server Management', steps:[ 'Buat direktori ElearnSys: lectures, assignments, grading.', 'Buat grup Teacher, Student, Assessor.', 'Tambahkan 6 user dan bagi sesuai grup.', 'Buat week1.pdf, task1.docx, grade.txt.', 'Atur permission sesuai kebutuhan e-learning.', 'Atur password expiry assessor1 = 10 hari.', 'Verifikasi permission & chage assessor1.' ], perms:[ {item:'lectures/','group':'Teacher','perm':'Read, Write, Execute (folder)'},{item:'week1.pdf','group':'Teacher','perm':'Read, Write (file)'},{item:'assignments/','group':'Student','perm':'Read, Write, Execute (folder)'},{item:'task1.docx','group':'Student','perm':'Read, Write (file)'},{item:'grading/','group':'Assessor','perm':'Read, Write, Execute (folder)'},{item:'grade.txt','group':'Assessor','perm':'Read, Write (file)'} ] },
-      { id:7, title:'GameStudio Asset Build System', steps:[ 'Buat direktori GameBuild: source, assets, build.', 'Buat grup Coder, Artist, Builder.', 'Buat 6 user sesuai grup.', 'Buat main.cpp, character.png, release.exe.', 'Atur permission: source (Coder), assets (Artist), build (Builder).', 'Atur password expiry builder1 = 35 hari.', 'Verifikasi semua setting & expiry builder1.' ], perms:[ {item:'source/','group':'Coder','perm':'Read, Write, Execute (folder)'},{item:'main.cpp','group':'Coder','perm':'Read, Write (file)'},{item:'assets/','group':'Artist','perm':'Read, Write, Execute (folder)'},{item:'character.png','group':'Artist','perm':'Read (file)'},{item:'build/','group':'Builder','perm':'Read, Write, Execute (folder)'},{item:'release.exe','group':'Builder','perm':'Read, Write, Execute (file)'} ] },
-      { id:8, title:'Network Infrastructure Configuration Server', steps:[ 'Buat direktori NetInfra: configs, tools, netlog.', 'Buat grup NetAdmin, Operator, Observer.', 'Tambahkan 6 user sesuai grup.', 'Buat router.cfg, ping.sh, history.log.', 'Atur permission sesuai kebutuhan jaringan.', 'Atur password expiry netadmin1 = 20 hari.', 'Verifikasi struktur & chage netadmin1.' ], perms:[ {item:'configs/','group':'NetAdmin','perm':'Read, Write, Execute (folder)'},{item:'router.cfg','group':'NetAdmin','perm':'Read, Write (file)'},{item:'tools/','group':'Operator','perm':'Read, Write, Execute (folder)'},{item:'ping.sh','group':'Operator','perm':'Read, Write, Execute (file)'},{item:'netlog/','group':'Observer','perm':'Read, Execute (folder)'},{item:'history.log','group':'Observer','perm':'Read (file)'} ] }
-    ];
-
-    // render grid
-    const grid = document.getElementById('grid');
-    function renderGrid(){
-      grid.innerHTML = '';
-      studyCases.forEach(sc=>{
-        const c = document.createElement('article');
-        c.className = 'card';
-        c.id = 'sc-'+sc.id;
-        c.innerHTML = `
-          <div>
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <h3>${sc.title}</h3>
-              <span class="tag">#${String(sc.id).padStart(2,'0')}</span>
-            </div>
-            <p>${sc.steps.slice(0,2).join(' ')}...</p>
-          </div>
-          <div class="footer">
-            <small style="color:#9fbdf4">${sc.steps.length} langkah</small>
-            <div style="display:flex;align-items:center">
-              <button class="secondary open-btn" data-id="${sc.id}" type="button">Lihat</button>
-              <!-- placeholder for per-card timer -->
-              <div class="card-timer" data-for="${sc.id}" style="display:none;"></div>
-            </div>
-          </div>
-        `;
-        c.addEventListener('click',(e)=>{
-          if (e.target.closest('button')) return;
-          selectCard(sc.id);
-        });
-        const btn = c.querySelector('.open-btn');
-        btn.addEventListener('click',(e)=>{
-          e.stopPropagation();
-          openModal(sc.id);
-          selectCard(sc.id);
-        });
-        grid.appendChild(c);
-      })
-    }
-    renderGrid();
-
-    // selection
-    let picked = null;
-    const pickedLabel = document.getElementById('pickedLabel');
-    function selectCard(id){
-      document.querySelectorAll('.card').forEach(el=>el.classList.remove('selected'));
-      const el = document.getElementById('sc-'+id);
-      if(el) el.classList.add('selected');
-      picked = studyCases.find(s=>s.id===id);
-      pickedLabel.textContent = picked ? picked.title : 'Tidak ada';
-    }
-
-    // modal handlers
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalSteps = document.getElementById('modalSteps');
-    const modalPerms = document.getElementById('modalPerms');
-    function openModal(id){
-      const sc = studyCases.find(s=>s.id===id);
-      if(!sc) return;
-      modalTitle.textContent = sc.title;
-      modalSteps.innerHTML = '<ol>' + sc.steps.map(st=>`<li>${st}</li>`).join('') + '</ol>';
-      modalPerms.innerHTML = '<strong>Permissions (kata):</strong>' + sc.perms.map(p=>`
-<div class="permRow"><div>${p.item} — <em>${p.group}</em></div><div>${p.perm}</div></div>`).join('');
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden','false');
-      setTimeout(()=> document.getElementById('closeModal').focus(), 80);
-    }
-    function closeModalUI(){
-      modal.style.display = 'none';
-      modal.setAttribute('aria-hidden','true');
-    }
-    document.getElementById('closeModal').addEventListener('click', ()=> closeModalUI());
     document.getElementById('copyBtn').addEventListener('click', async ()=>{
       if(!picked){ alert('Belum ada study case yang dipilih.'); return }
-      const text = `${picked.title}\n\n${picked.steps.map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\nPermissions:\n${picked.perms.map(p=>`${p.item} — ${p.group} — ${p.perm}`).join('\n')}`;
-      const ok = await safeCopy(text);
+      const ok = await safeCopy(picked.description);
       if(ok) alert('Tersalin ke clipboard');
     });
 
-    // permission guide handlers
+    // permission guide (shows raw list)
     const permGuide = document.getElementById('permGuide');
     const guideContent = document.getElementById('guideContent');
     document.getElementById('openPermGuide').addEventListener('click', ()=>{
-      guideContent.innerHTML = '';
-      studyCases.forEach(sc=>{
-        const el = document.createElement('div');
-        el.style.marginBottom = '10px';
-        el.innerHTML = `<strong>${sc.title}</strong><div style="margin-top:6px">` + sc.perms.map(p=>`<div style="display:flex;justify-content:space-between;padding:4px 6px;border-bottom:1px dashed rgba(255,255,255,0.02)"><div>${p.item} <small style="color:#9fbdf4">— ${p.group}</small></div><div>${p.perm}</div></div>`).join('') + `</div>`;
-        guideContent.appendChild(el);
-      });
+      guideContent.innerText = studyCases.join('\n\n---\n\n');
       permGuide.style.display = 'flex';
       permGuide.setAttribute('aria-hidden','false');
     });
-    document.getElementById('closeGuide').addEventListener('click', ()=> {
-      permGuide.style.display='none';
-      permGuide.setAttribute('aria-hidden','true');
-    });
+    document.getElementById('closeGuide').addEventListener('click', ()=> { permGuide.style.display='none'; permGuide.setAttribute('aria-hidden','true'); });
     document.getElementById('copyGuide').addEventListener('click', async ()=>{
-      const all = studyCases.map(sc=>`${sc.title}\n` + sc.perms.map(p=>`${p.item} — ${p.group} — ${p.perm}`).join('\n')).join('\n\n');
+      const all = studyCases.join('\n\n---\n\n');
       const ok = await safeCopy(all);
-      if(ok) alert('Semua permission tersalin');
+      if(ok) alert('Semua study case tersalin');
     });
 
-    // GACHA LOCK + TIMER LOGIC (updated to store id)
+    // GACHA + overlay + timer logic
     const gachaBtn = document.getElementById('gachaBtn');
     const gachaTimerLabel = document.getElementById('gachaTimer');
     let countdownInterval = null;
-    let countdownRemaining = 0; // ms
-    let countdownEndsAt = null; // epoch ms
+    let countdownEndsAt = null;
+    let countdownRemaining = 0;
 
-    function getLastGachaData(){
-      const v = localStorage.getItem(STORAGE_KEY);
-      return v ? JSON.parse(v) : null; // {ts, id}
-    }
-    function setLastGachaData(obj){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    }
+    function getLastGachaData(){ const v = localStorage.getItem(STORAGE_KEY); return v ? JSON.parse(v) : null; }
+    function setLastGachaData(obj){ localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); }
     function clearLastGachaData(){ localStorage.removeItem(STORAGE_KEY); }
+    function msRemainingFrom(timestamp){ const cooldownMs = GACHA_COOLDOWN_MINUTES * 60 * 1000; const elapsed = Date.now() - timestamp; return Math.max(0, cooldownMs - elapsed); }
+    function formatMsAsMMSS(ms){ const totalSec = Math.ceil(ms/1000); const minutes = Math.floor(totalSec / 60); const seconds = totalSec % 60; return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`; }
 
-    function msRemainingFrom(timestamp){
-      const cooldownMs = GACHA_COOLDOWN_MINUTES * 60 * 1000;
-      const elapsed = Date.now() - timestamp;
-      return Math.max(0, cooldownMs - elapsed);
-    }
-
-    function formatMsAsMMSS(ms){
-      const totalSec = Math.ceil(ms/1000);
-      const minutes = Math.floor(totalSec / 60);
-      const seconds = totalSec % 60;
-      return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-    }
-
-    // per-card timer UI
-    function showTimerOnCard(cardId, text){
-      const el = document.querySelector(`.card-timer[data-for="${cardId}"]`);
-      if(el){
-        el.style.display = 'inline-block';
-        el.textContent = text;
-      }
-    }
-    function hideTimerOnCard(cardId){
-      const el = document.querySelector(`.card-timer[data-for="${cardId}"]`);
-      if(el){ el.style.display = 'none'; el.textContent = ''; }
-    }
-
-    function startCountdown(ms, cardId){
+    function startCountdown(ms){
       if(countdownInterval) clearInterval(countdownInterval);
       countdownRemaining = ms;
       countdownEndsAt = Date.now() + ms;
-      updateAllDisplays(countdownRemaining, cardId);
+      updateAllDisplays(countdownRemaining);
       gachaBtn.disabled = true;
       gachaBtn.setAttribute('aria-disabled','true');
 
@@ -450,23 +463,18 @@
           gachaTimerLabel.textContent = '';
           gachaBtn.disabled = false;
           gachaBtn.removeAttribute('aria-disabled');
-          if(cardId) hideTimerOnCard(cardId);
-          // reset overlay UI if open
           document.getElementById('overlayTimerBig').textContent = '--:--';
           document.getElementById('overlayProgress').style.width = '0%';
           clearLastGachaData();
         } else {
-          updateAllDisplays(rem, cardId);
+          updateAllDisplays(rem);
         }
       }, 250);
     }
 
-    function updateAllDisplays(ms, cardId){
+    function updateAllDisplays(ms){
       const txt = formatMsAsMMSS(ms);
       gachaTimerLabel.textContent = txt;
-      if(cardId) showTimerOnCard(cardId, txt);
-      // overlay big timer + progress
-      const data = getLastGachaData();
       const totalMs = GACHA_COOLDOWN_MINUTES * 60 * 1000;
       const pct = Math.max(0, Math.min(100, ((totalMs - ms) / totalMs) * 100));
       const overlayTimerBig = document.getElementById('overlayTimerBig');
@@ -477,42 +485,18 @@
       }
     }
 
-    function checkGachaLockOnLoad(){
-      const data = getLastGachaData();
-      if(!data || !data.ts) {
-        gachaTimerLabel.textContent = '';
-        gachaBtn.disabled = false;
-        document.querySelectorAll('.card-timer').forEach(el=>{ el.style.display='none'; el.textContent=''; });
-        return;
-      }
-      const rem = msRemainingFrom(data.ts);
-      if(rem <= 0){
-        clearLastGachaData();
-        gachaTimerLabel.textContent = '';
-        gachaBtn.disabled = false;
-        document.querySelectorAll('.card-timer').forEach(el=>{ el.style.display='none'; el.textContent=''; });
-      } else {
-        // show timer on stored card id, but do not open overlay automatically
-        startCountdown(rem, data.id);
-      }
-    }
-
-    // POST-GACHA OVERLAY ELEMENTS
+    // overlay elements
     const postOverlay = document.getElementById('postGachaOverlay');
     const overlayTitle = document.getElementById('overlayTitle');
     const overlaySubtitle = document.getElementById('overlaySubtitle');
     const overlaySummary = document.getElementById('overlaySummary');
     const overlayPermsShort = document.getElementById('overlayPermsShort');
-    const overlayTimerBig = document.getElementById('overlayTimerBig');
-    const overlayProgress = document.getElementById('overlayProgress');
     const startGachaLockBtn = document.getElementById('startGachaLock');
     const hideOverlayBtn = document.getElementById('hideOverlay');
     const stopTimerBtn = document.getElementById('stopTimer');
-
     let justPicked = null;
 
-    // main GACHA handler: show overlay with START
-    document.getElementById('gachaBtn').addEventListener('click', ()=>{
+    gachaBtn.addEventListener('click', ()=>{
       const data = getLastGachaData();
       if(data && data.ts){
         const rem = msRemainingFrom(data.ts);
@@ -521,56 +505,42 @@
           return;
         }
       }
-
-      // pick random
-      const random = studyCases[Math.floor(Math.random()*studyCases.length)];
-      justPicked = random;
-
-      overlayTitle.textContent = random.title;
-      overlaySubtitle.textContent = 'Ini ringkasan study case yang kamu dapatkan.';
-      overlaySummary.innerHTML = `<ol>${random.steps.map(s=>`<li>${s}</li>`).join('')}</ol>`;
-      overlayPermsShort.innerHTML = random.perms.map(p=>`<div style="display:flex;justify-content:space-between;padding:6px 4px;border-bottom:1px dashed rgba(255,255,255,0.02)"><div>${p.item} <small style="color:#9fbdf4">— ${p.group}</small></div><div>${p.perm}</div></div>`).join('');
-
-      // reset overlay controls (START shown)
+      const randomIdx = Math.floor(Math.random()*studyCases.length);
+      const random = studyCases[randomIdx];
+      justPicked = { id: randomIdx+1, desc: random };
+      overlayTitle.textContent = `Study Case #${justPicked.id}`;
+      overlaySubtitle.textContent = 'Ringkasan study case yang kamu dapatkan.';
+      overlaySummary.innerHTML = formatRawToHTML(justPicked.desc);
+      // extract any "Salah satu user ..." lines to highlight expiry info
+      const expiryLines = justPicked.desc.split('\n').filter(l=>/masa berlaku password|masa berlaku kata sandi|masa berlaku password-nya/i.test(l));
+      overlayPermsShort.innerHTML = expiryLines.length ? expiryLines.map(l=>`<div style="padding:6px 4px;border-bottom:1px dashed rgba(255,255,255,0.02)">${escapeHtml(l.trim())}</div>`).join('') : '<div class="desc-par">Tidak ada catatan expiry khusus.</div>';
       startGachaLockBtn.style.display = 'block';
       hideOverlayBtn.style.display = 'inline-block';
       stopTimerBtn.style.display = 'none';
-      overlayTimerBig.textContent = '--:--';
-      overlayProgress.style.width = '0%';
-
+      document.getElementById('overlayTimerBig').textContent = '--:--';
+      document.getElementById('overlayProgress').style.width = '0%';
       postOverlay.style.display = 'flex';
       postOverlay.setAttribute('aria-hidden','false');
       setTimeout(()=> startGachaLockBtn.focus(), 80);
     });
 
-    // START: begin timer, save {ts, id}, keep overlay open and show big timer
     startGachaLockBtn.addEventListener('click', ()=>{
       if(!justPicked) return;
       selectCard(justPicked.id);
-
       const now = Date.now();
       setLastGachaData({ ts: now, id: justPicked.id });
       const cooldownMs = GACHA_COOLDOWN_MINUTES * 60 * 1000;
-      startCountdown(cooldownMs, justPicked.id);
-
-      // update overlay controls: hide START, show Stop
+      startCountdown(cooldownMs);
       startGachaLockBtn.style.display = 'none';
       stopTimerBtn.style.display = 'inline-block';
-
-      // keep overlay open (so user can see big timer + question)
-      // optionally auto-open modal details
-      openModal(justPicked.id);
-
       justPicked = null;
     });
 
-    // Hide overlay (keep timer running)
     hideOverlayBtn.addEventListener('click', ()=>{
       postOverlay.style.display = 'none';
       postOverlay.setAttribute('aria-hidden','true');
     });
 
-    // Stop timer (cancel)
     stopTimerBtn.addEventListener('click', ()=>{
       if(!confirm('Hentikan timer? Ini akan membatalkan lock GACHA.')) return;
       if(countdownInterval) clearInterval(countdownInterval);
@@ -580,18 +550,13 @@
       gachaTimerLabel.textContent = '';
       gachaBtn.disabled = false;
       gachaBtn.removeAttribute('aria-disabled');
-      // hide card timers
-      const data = getLastGachaData();
-      if(data && data.id) hideTimerOnCard(data.id);
-      // reset overlay UI
-      overlayTimerBig.textContent = '--:--';
-      overlayProgress.style.width = '0%';
+      document.getElementById('overlayTimerBig').textContent = '--:--';
+      document.getElementById('overlayProgress').style.width = '0%';
       startGachaLockBtn.style.display = 'block';
       stopTimerBtn.style.display = 'none';
       clearLastGachaData();
     });
 
-    // allow clicking backdrop to close overlay (doesn't stop timer)
     postOverlay.addEventListener('click', (e)=>{
       if(e.target === postOverlay){
         postOverlay.style.display = 'none';
@@ -605,31 +570,34 @@
         gachaBtn.click();
         return;
       }
-      let pool = studyCases.filter(s=>s.id!==picked.id);
-      if(pool.length === 0) pool = [...studyCases];
-      const random = pool[Math.floor(Math.random()*pool.length)];
-      selectCard(random.id);
-      openModal(random.id);
+      let poolIdxs = studyCases.map((_,i)=>i);
+      const currentIdx = picked.id - 1;
+      poolIdxs = poolIdxs.filter(i=>i !== currentIdx);
+      if(poolIdxs.length === 0) poolIdxs = studyCases.map((_,i)=>i);
+      const random = poolIdxs[Math.floor(Math.random()*poolIdxs.length)];
+      selectCard(random+1);
+      openModal(random+1);
     });
 
     // export selected JSON
     document.getElementById('exportSelected').addEventListener('click', ()=>{
       if(!picked){ alert('Belum ada study case terpilih.'); return }
-      const blob = new Blob([JSON.stringify(picked, null, 2)], {type:'application/json'});
+      const blob = new Blob([JSON.stringify({ id:picked.id, raw:picked.description }, null, 2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `studycase-${picked.id}.json`;
+      a.href = url;
+      a.download = `studycase-${picked.id}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     });
 
-    // accessibility: close modal on backdrop click
+    // backdrop close and ESC
     document.getElementById('modal').addEventListener('click', (e)=>{ if(e.target===document.getElementById('modal')) closeModalUI() });
     document.getElementById('permGuide').addEventListener('click', (e)=>{ if(e.target===document.getElementById('permGuide')) { permGuide.style.display='none'; permGuide.setAttribute('aria-hidden','true'); } });
+    document.getElementById('copyModal').addEventListener('click', (e)=>{ if(e.target===document.getElementById('copyModal')) { document.getElementById('copyModal').style.display='none'; document.getElementById('copyModal').setAttribute('aria-hidden','true'); } });
 
-    // Esc to close overlays/modals
     document.addEventListener('keydown',(e)=>{
       if(e.key === 'Escape'){
         if(document.getElementById('modal').style.display === 'flex') closeModalUI();
@@ -639,8 +607,20 @@
       }
     });
 
-    // on load: check stored lock and show timer on card if active
-    checkGachaLockOnLoad();
+    // small utils
+    function escapeHtml(s){
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // on load: restore lock if present
+    (function(){ 
+      const data = getLastGachaData();
+      if(!data || !data.ts) return;
+      const rem = msRemainingFrom(data.ts);
+      if(rem > 0) startCountdown(rem);
+      else clearLastGachaData();
+    })();
+
   </script>
 </body>
 </html>
