@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Study Case Gacha — Drone / IT Labs</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#60a5fa;
+      --muted:#93c5fd33;
+      --glass: rgba(255,255,255,0.03);
+      --radius:12px;
+      --gap:12px;
+      --fw:600;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:linear-gradient(180deg,#071023 0%, #071627 70%); color:#e6eef8}
+    .wrap{max-width:1100px;margin:28px auto;padding:18px}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    h1{font-size:18px;margin:0}
+    .controls{display:flex;gap:8px;align-items:center}
+    button{background:var(--accent);border:0;padding:9px 12px;border-radius:10px;color:#04243a;font-weight:700;cursor:pointer}
+    button.secondary{background:transparent;border:1px solid var(--muted);color:var(--accent);padding:7px 10px;border-radius:10px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--gap);margin-top:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);min-height:120px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
+    .card h3{margin:0 0 8px 0;font-size:15px}
+    .card p{margin:0;font-size:13px;color:#bcd5efcc}
+    .tag{font-size:12px;padding:6px 8px;border-radius:999px;background:var(--glass);display:inline-block;margin-right:6px}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+    .selected{outline:3px solid rgba(96,165,250,0.14);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    /* modal */
+    .modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6), rgba(2,6,23,0.6));backdrop-filter: blur(6px);padding:20px;z-index:50}
+    .modal{max-width:900px;width:100%;background:linear-gradient(180deg, #071124, #041023);border-radius:10px;padding:14px;border:1px solid rgba(255,255,255,0.03)}
+    .steps{margin-top:10px;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;max-height:56vh;overflow:auto}
+    .steps ol{padding-left:18px;margin:0}
+    .steps li{margin:8px 0;padding-left:8px}
+    .permTable{margin-top:10px;border-radius:8px;padding:10px;background:rgba(255,255,255,0.02)}
+    .permRow{display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px dashed rgba(255,255,255,0.02)}
+    .permRow:last-child{border-bottom:0}
+    /* copy modal */
+    .copyModalContent{display:flex;flex-direction:column;gap:8px}
+    textarea.copyArea{width:100%;min-height:160px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    /* small */
+    @media (max-width: 420px) {
+      .wrap { padding: 10px; }
+      h1 { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Study Case Gacha — 8 Kasus untuk Praktikum</h1>
+        <div style="color:#9fbdf4;font-size:13px;margin-top:6px">Klik "GACHA" untuk dapatkan study case random. Tekan pada kartu untuk lihat detail dan permission.</div>
+      </div>
+      <div class="controls" role="toolbar" aria-label="controls">
+        <button id="gachaBtn" type="button">🎲 GACHA</button>
+        <button class="secondary" id="pickAgain" type="button">Pick again</button>
+        <button class="secondary" id="exportSelected" type="button">Export JSON</button>
+        <button class="secondary" id="openPermGuide" type="button">Permission Guide</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="grid" id="grid" role="list"></div>
+
+      <div style="margin-top:14px;display:flex;gap:8px;align-items:center">
+        <div style="font-size:13px;color:#9fbdf4">Dipilih:</div>
+        <div id="pickedLabel" style="font-weight:700;color:var(--accent)">Tidak ada</div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modalWrap" id="modal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h3 id="modalTitle">Title</h3>
+      <div style="display:flex;gap:8px">
+        <button class="secondary" id="copyBtn" type="button">Copy</button>
+        <button id="closeModal" type="button">Close</button>
+      </div>
+    </div>
+    <div class="steps" id="modalSteps"></div>
+    <div class="permTable" id="modalPerms"></div>
+  </div>
+  </div>
+
+  <div class="modalWrap" id="permGuide" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>Permission Guide — Penjelasan & Contoh</h3>
+      <div>
+        <button class="secondary" id="copyGuide" type="button">Copy All</button>
+        <button id="closeGuide" type="button">Close</button>
+      </div>
+    </div>
+    <div class="steps" style="max-height:60vh;overflow:auto">
+      <h4>Format: Folder / File — Group — Permission (kata)</h4>
+      <div id="guideContent" style="margin-top:8px"></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="modalWrap" id="copyModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>Copy (manual)</h3>
+      <div>
+        <button id="closeCopy" type="button">Close</button>
+      </div>
+    </div>
+    <div class="steps copyModalContent">
+      <div style="font-size:13px;color:#9fbdf4">Jika browser memblokir Clipboard API, salin teks di bawah secara manual (Ctrl/Cmd + C)</div>
+      <textarea class="copyArea" id="copyArea" readonly></textarea>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button id="selectAll" type="button">Select All</button></div>
+    </div>
+  </div>
+  </div>
+
+  <script>
+    // helper: safe copy with fallback modal (non-throwing)
+    function showCopyModal(text){
+      const modal = document.getElementById('copyModal');
+      const area = document.getElementById('copyArea');
+      area.value = text;
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden','false');
+      // focus + select ready
+      setTimeout(()=> { area.focus(); area.select(); }, 80);
+    }
+    document.getElementById('closeCopy').addEventListener('click', ()=> {
+      document.getElementById('copyModal').style.display='none';
+      document.getElementById('copyModal').setAttribute('aria-hidden','true');
+    });
+    document.getElementById('selectAll').addEventListener('click', ()=>{
+      const area = document.getElementById('copyArea'); area.select();
+    });
+
+    async function safeCopy(text){
+      // try modern clipboard first
+      try {
+        if(navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+      } catch (err) {
+        // fall through to show manual modal
+      }
+      // fallback: show manual modal for user to copy
+      showCopyModal(text);
+      return false;
+    }
+
+    // study cases + permission (kata) included
+    const studyCases = [
+      {
+        id:1, title: 'DroneLab Research Server',
+        steps: [
+          'Buat direktori DroneLab dengan subfolder firmware, data, dan logs.',
+          'Buat tiga grup DevTeam, PilotTeam, AnalystTeam.',
+          'Tambahkan 6 user; 2 user per grup.',
+          'Buat file contoh core.sh (firmware), flight.csv (data), test.log (logs).',
+          'Atur permission file sesuai kebutuhan tiap tim.',
+          'Atur password expiry untuk pilot1 menjadi 20 hari.',
+          'Verifikasi struktur direktori dan pengaturan password pilot1.'
+        ],
+        perms: [
+          {item:'firmware/','group':'DevTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'core.sh','group':'DevTeam','perm':'Read, Write (file)'},
+          {item:'data/','group':'PilotTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'flight.csv','group':'PilotTeam','perm':'Read, Write (file)'},
+          {item:'logs/','group':'AnalystTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'test.log','group':'AnalystTeam','perm':'Read, Write (file)'}
+        ]
+      },
+      {
+        id:2, title: 'CyberSecurity Incident Center',
+        steps:[
+          'Buat direktori IncidentCenter: incident, analysis, report.',
+          'Buat grup Responder, Forensic, Manager.',
+          'Tambahkan 6 user, 2 tiap grup.',
+          'Buat file case001.txt, findings.txt, final.pdf.',
+          'Atur permission: incident (Responder), analysis (Forensic), report (semua).',
+          'Atur password expiry forensic1 = 15 hari.',
+          'Verifikasi struktur & chage forensic1.'
+        ],
+        perms:[
+          {item:'incident/','group':'Responder','perm':'Read, Write, Execute (folder)'},
+          {item:'case001.txt','group':'Responder','perm':'Read, Write (file)'},
+          {item:'analysis/','group':'Forensic','perm':'Read, Write, Execute (folder)'},
+          {item:'findings.txt','group':'Forensic','perm':'Read, Write (file)'},
+          {item:'report/','group':'All Users','perm':'Read, Execute (folder)'},
+          {item:'final.pdf','group':'All Users','perm':'Read (file)'}
+        ]
+      },
+      {
+        id:3, title: 'SmartFactory Automation System',
+        steps:[
+          'Buat direktori SmartFactory: sensor, control, maintenance.',
+          'Buat grup SensorTeam, ControlTeam, MaintTeam.',
+          'Buat 6 user, 2 per grup.',
+          'Buat temp.txt, robot.cfg, maint.log.',
+          'Atur permission sesuai operasional pabrik.',
+          'Atur password expiry control1 = 30 hari.',
+          'Verifikasi direktori & status password control1.'
+        ],
+        perms:[
+          {item:'sensor/','group':'SensorTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'temp.txt','group':'SensorTeam','perm':'Read, Write (file)'},
+          {item:'control/','group':'ControlTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'robot.cfg','group':'ControlTeam','perm':'Read, Write (file)'},
+          {item:'maintenance/','group':'MaintTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'maint.log','group':'MaintTeam','perm':'Read, Write (file)'}
+        ]
+      },
+      {
+        id:4, title: 'MediaStudio Editing Server',
+        steps:[
+          'Buat direktori MediaStudio: raw, edit, export.',
+          'Buat grup Editor, Renderer, Producer.',
+          'Tambahkan user: 4 editor/renderer, 2 producer.',
+          'Buat footage.mp4, timeline.edt, final.mp4.',
+          'Atur permission: raw (Editor), edit (Editor+Renderer), export (semua).',
+          'Atur password expiry editor1 = 40 hari.',
+          'Verifikasi direktori & password editor1.'
+        ],
+        perms:[
+          {item:'raw/','group':'Editor','perm':'Read, Write, Execute (folder)'},
+          {item:'footage.mp4','group':'Editor','perm':'Read, Write (file)'},
+          {item:'edit/','group':'Editor & Renderer','perm':'Read, Write, Execute (folder)'},
+          {item:'timeline.edt','group':'Editor & Renderer','perm':'Read, Write (file)'},
+          {item:'export/','group':'All Users','perm':'Read, Execute (folder)'},
+          {item:'final.mp4','group':'All Users','perm':'Read (file)'}
+        ]
+      },
+      {
+        id:5, title: 'Hospital Medical Records Server',
+        steps:[
+          'Buat direktori HosData: patients, doctors, finance.',
+          'Buat grup MedTeam, DocTeam, FinTeam.',
+          'Tambahkan 6 user sesuai kelompok.',
+          'Buat list.txt, schedule.txt, salary.csv.',
+          'Atur permission: patients (MedTeam), doctors (DocTeam), finance (FinTeam).',
+          'Atur password expiry fin1 = 25 hari.',
+          'Verifikasi akses & kadaluarsa fin1.'
+        ],
+        perms:[
+          {item:'patients/','group':'MedTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'list.txt','group':'MedTeam','perm':'Read, Write (file)'},
+          {item:'doctors/','group':'DocTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'schedule.txt','group':'DocTeam','perm':'Read, Write (file)'},
+          {item:'finance/','group':'FinTeam','perm':'Read, Write, Execute (folder)'},
+          {item:'salary.csv','group':'FinTeam','perm':'Read, Write (file)'}
+        ]
+      },
+      {
+        id:6, title: 'E-Learning Server Management',
+        steps:[
+          'Buat direktori ElearnSys: lectures, assignments, grading.',
+          'Buat grup Teacher, Student, Assessor.',
+          'Tambahkan 6 user dan bagi sesuai grup.',
+          'Buat week1.pdf, task1.docx, grade.txt.',
+          'Atur permission sesuai kebutuhan e-learning.',
+          'Atur password expiry assessor1 = 10 hari.',
+          'Verifikasi permission & chage assessor1.'
+        ],
+        perms:[
+          {item:'lectures/','group':'Teacher','perm':'Read, Write, Execute (folder)'},
+          {item:'week1.pdf','group':'Teacher','perm':'Read, Write (file)'},
+          {item:'assignments/','group':'Student','perm':'Read, Write, Execute (folder)'},
+          {item:'task1.docx','group':'Student','perm':'Read, Write (file)'},
+          {item:'grading/','group':'Assessor','perm':'Read, Write, Execute (folder)'},
+          {item:'grade.txt','group':'Assessor','perm':'Read, Write (file)'}
+        ]
+      },
+      {
+        id:7, title: 'GameStudio Asset Build System',
+        steps:[
+          'Buat direktori GameBuild: source, assets, build.',
+          'Buat grup Coder, Artist, Builder.',
+          'Buat 6 user sesuai grup.',
+          'Buat main.cpp, character.png, release.exe.',
+          'Atur permission: source (Coder), assets (Artist), build (Builder).',
+          'Atur password expiry builder1 = 35 hari.',
+          'Verifikasi semua setting & expiry builder1.'
+        ],
+        perms:[
+          {item:'source/','group':'Coder','perm':'Read, Write, Execute (folder)'},
+          {item:'main.cpp','group':'Coder','perm':'Read, Write (file)'},
+          {item:'assets/','group':'Artist','perm':'Read, Write, Execute (folder)'},
+          {item:'character.png','group':'Artist','perm':'Read (file)'},
+          {item:'build/','group':'Builder','perm':'Read, Write, Execute (folder)'},
+          {item:'release.exe','group':'Builder','perm':'Read, Write, Execute (file)'}
+        ]
+      },
+      {
+        id:8, title: 'Network Infrastructure Configuration Server',
+        steps:[
+          'Buat direktori NetInfra: configs, tools, netlog.',
+          'Buat grup NetAdmin, Operator, Observer.',
+          'Tambahkan 6 user sesuai grup.',
+          'Buat router.cfg, ping.sh, history.log.',
+          'Atur permission sesuai kebutuhan jaringan.',
+          'Atur password expiry netadmin1 = 20 hari.',
+          'Verifikasi struktur & chage netadmin1.'
+        ],
+        perms:[
+          {item:'configs/','group':'NetAdmin','perm':'Read, Write, Execute (folder)'},
+          {item:'router.cfg','group':'NetAdmin','perm':'Read, Write (file)'},
+          {item:'tools/','group':'Operator','perm':'Read, Write, Execute (folder)'},
+          {item:'ping.sh','group':'Operator','perm':'Read, Write, Execute (file)'},
+          {item:'netlog/','group':'Observer','perm':'Read, Execute (folder)'},
+          {item:'history.log','group':'Observer','perm':'Read (file)'}
+        ]
+      }
+    ];
+
+    // render grid
+    const grid = document.getElementById('grid');
+    function renderGrid(){
+      grid.innerHTML = '';
+      studyCases.forEach(sc=>{
+        const c = document.createElement('article');
+        c.className = 'card';
+        c.id = 'sc-'+sc.id;
+        c.innerHTML = `
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <h3>${sc.title}</h3>
+              <span class="tag">#${String(sc.id).padStart(2,'0')}</span>
+            </div>
+            <p>${sc.steps.slice(0,2).join(' ')}...</p>
+          </div>
+          <div class="footer">
+            <small style="color:#9fbdf4">${sc.steps.length} langkah</small>
+            <div>
+              <button class="secondary open-btn" data-id="${sc.id}" type="button">Lihat</button>
+            </div>
+          </div>
+        `;
+        // clicking the card selects it, except when a button inside is clicked
+        c.addEventListener('click',(e)=>{
+          // if click originated from a button or inside a button, ignore (button has own handler)
+          if (e.target.closest('button')) return;
+          selectCard(sc.id);
+        });
+        // ensure the inner button doesn't bubble to the article click
+        const btn = c.querySelector('.open-btn');
+        btn.addEventListener('click',(e)=>{
+          e.stopPropagation(); // prevent triggering article click
+          openModal(sc.id);
+          selectCard(sc.id);
+        });
+        grid.appendChild(c);
+      })
+    }
+    renderGrid();
+
+    // selection
+    let picked = null;
+    const pickedLabel = document.getElementById('pickedLabel');
+    function selectCard(id){
+      // remove previous selected
+      document.querySelectorAll('.card').forEach(el=>el.classList.remove('selected'));
+      const el = document.getElementById('sc-'+id);
+      if(el) el.classList.add('selected');
+      picked = studyCases.find(s=>s.id===id);
+      pickedLabel.textContent = picked ? picked.title : 'Tidak ada';
+    }
+
+    // modal handlers
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSteps = document.getElementById('modalSteps');
+    const modalPerms = document.getElementById('modalPerms');
+    function openModal(id){
+      const sc = studyCases.find(s=>s.id===id);
+      if(!sc) return;
+      modalTitle.textContent = sc.title;
+      modalSteps.innerHTML = '<ol>' + sc.steps.map(st=>`<li>${st}</li>`).join('') + '</ol>';
+      // render perms
+      modalPerms.innerHTML = '<strong>Permissions (kata):</strong>' + sc.perms.map(p=>`
+<div class="permRow"><div>${p.item} — <em>${p.group}</em></div><div>${p.perm}</div></div>`).join('');
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden','false');
+      // focus for accessibility
+      setTimeout(()=> document.getElementById('closeModal').focus(), 80);
+    }
+    function closeModalUI(){
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden','true');
+    }
+    document.getElementById('closeModal').addEventListener('click', ()=> closeModalUI());
+    document.getElementById('copyBtn').addEventListener('click', async ()=>{
+      if(!picked){ alert('Belum ada study case yang dipilih.'); return }
+      const text = `${picked.title}\n\n${picked.steps.map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\nPermissions:\n${picked.perms.map(p=>`${p.item} — ${p.group} — ${p.perm}`).join('\n')}`;
+      const ok = await safeCopy(text);
+      if(ok) {
+        // user agent permitted clipboard write
+        try { alert('Tersalin ke clipboard'); } catch(_) {}
+      } else {
+        // manual modal already shown
+      }
+    });
+
+    // permission guide (full)
+    const permGuide = document.getElementById('permGuide');
+    const guideContent = document.getElementById('guideContent');
+    document.getElementById('openPermGuide').addEventListener('click', ()=>{
+      guideContent.innerHTML = '';
+      studyCases.forEach(sc=>{
+        const el = document.createElement('div');
+        el.style.marginBottom = '10px';
+        el.innerHTML = `<strong>${sc.title}</strong><div style="margin-top:6px">` + sc.perms.map(p=>`<div style="display:flex;justify-content:space-between;padding:4px 6px;border-bottom:1px dashed rgba(255,255,255,0.02)"><div>${p.item} <small style="color:#9fbdf4">— ${p.group}</small></div><div>${p.perm}</div></div>`).join('') + `</div>`;
+        guideContent.appendChild(el);
+      });
+      permGuide.style.display = 'flex';
+      permGuide.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('closeGuide').addEventListener('click', ()=> {
+      permGuide.style.display='none';
+      permGuide.setAttribute('aria-hidden','true');
+    });
+
+    document.getElementById('copyGuide').addEventListener('click', async ()=>{
+      const all = studyCases.map(sc=>`${sc.title}\n` + sc.perms.map(p=>`${p.item} — ${p.group} — ${p.perm}`).join('\n')).join('\n\n');
+      const ok = await safeCopy(all);
+      if(ok) alert('Semua permission tersalin');
+    });
+
+    // PERBAIKAN UTAMA: Logika GACHA
+    document.getElementById('gachaBtn').addEventListener('click', ()=>{
+      // remove previous selection visual but keep picked var so Pick Again can use it
+      if (picked) {
+        const prev = document.getElementById('sc-'+picked.id);
+        if(prev) prev.classList.remove('selected');
+      }
+
+      // Pilih study case acak
+      const random = studyCases[Math.floor(Math.random()*studyCases.length)];
+
+      // Tambahkan 'selected' sebentar ke kartu yang dipilih untuk efek "gacha"
+      const cardEl = document.getElementById('sc-'+random.id);
+      if(!cardEl) return;
+      cardEl.classList.add('selected');
+      // efek kedip lebih terasa: tambahkan dan biarkan beberapa saat
+      setTimeout(()=> {
+        // keep selection visible (do not remove immediately)
+        // selectCard will be called when opening modal below
+      }, 120);
+
+      // Pilih kartu dan buka modal setelah delay singkat
+      setTimeout(()=>{
+        selectCard(random.id);
+        openModal(random.id);
+      }, 220);
+    });
+
+    document.getElementById('pickAgain').addEventListener('click', ()=>{
+      if(!picked){
+        document.getElementById('gachaBtn').click();
+        return;
+      }
+      let pool = studyCases.filter(s=>s.id!==picked.id);
+      if(pool.length === 0) pool = [...studyCases];
+      const random = pool[Math.floor(Math.random()*pool.length)];
+      selectCard(random.id);
+      openModal(random.id);
+    });
+
+    // export selected JSON
+    document.getElementById('exportSelected').addEventListener('click', ()=>{
+      if(!picked){ alert('Belum ada study case terpilih.'); return }
+      const blob = new Blob([JSON.stringify(picked, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `studycase-${picked.id}.json`;
+      // append to DOM to comply with some browsers
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // accessibility: close modal on backdrop click (modalWrap)
+    document.getElementById('modal').addEventListener('click', (e)=>{ if(e.target===document.getElementById('modal')) closeModalUI() });
+    document.getElementById('permGuide').addEventListener('click', (e)=>{ if(e.target===document.getElementById('permGuide')) { permGuide.style.display='none'; permGuide.setAttribute('aria-hidden','true'); } });
+
+    // keyboard accessibility: Esc to close any modal
+    document.addEventListener('keydown',(e)=>{
+      if(e.key === 'Escape'){
+        // close whichever modal is open
+        if(document.getElementById('modal').style.display === 'flex') closeModalUI();
+        if(document.getElementById('permGuide').style.display === 'flex'){ permGuide.style.display='none'; permGuide.setAttribute('aria-hidden','true'); }
+        if(document.getElementById('copyModal').style.display === 'flex'){ document.getElementById('copyModal').style.display='none'; document.getElementById('copyModal').setAttribute('aria-hidden','true'); }
+      }
+    });
+  </script>
+</body>
+</html>
