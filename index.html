@@ -63,6 +63,34 @@
     @media (max-width:1100px){ .overlayCard{grid-template-columns:1fr 320px} }
     @media (max-width:900px){ .overlayCard{grid-template-columns:1fr} .overlayRight{order:2} .overlayLeft{max-width:100%} }
     @media (max-width:520px){ .bigTimer{font-size:28px} .card p{white-space:normal} }
+    
+    /* Efek animasi goyang/putar tombol (dari langkah sebelumnya, dipertahankan) */
+    @keyframes roll-gacha {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(-2px, -2px) rotate(-5deg); }
+      50% { transform: translate(2px, 2px) rotate(5deg); }
+      75% { transform: translate(-2px, -2px) rotate(-5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    button#gachaBtn.is-rolling {
+      animation: roll-gacha 0.15s infinite;
+      opacity: 0.85;
+      cursor: wait;
+    }
+
+    /* Efek animasi putar untuk spinner (BARU) */
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Class untuk mengaktifkan putaran */
+    .is-spinning {
+        animation-name: spin;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }
   </style>
 </head>
 <body>
@@ -90,7 +118,6 @@
     </main>
   </div>
 
-  <!-- modal -->
   <div class="modalWrap" id="modal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
@@ -104,7 +131,6 @@
     </div>
   </div>
 
-  <!-- permission guide -->
   <div class="modalWrap" id="permGuide" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -119,7 +145,6 @@
     </div>
   </div>
 
-  <!-- copy modal -->
   <div class="modalWrap" id="copyModal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -133,7 +158,6 @@
     </div>
   </div>
 
-  <!-- post-gacha overlay -->
   <div class="overlayFull" id="postGachaOverlay" aria-hidden="true">
     <div class="overlayCard" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
       <div class="overlayLeft">
@@ -150,6 +174,7 @@
       </div>
 
       <div class="overlayRight">
+        <div id="gachaSpinner" style="display:none; margin: 30px 0; font-size: 80px; transform-origin: center; animation-duration: 0.1s;">🎲</div>
         <div class="mutedSmall">Sisa waktu</div>
         <div id="overlayTimerBig" class="bigTimer">--:--</div>
         <div class="progressBar"><div id="overlayProgress" class="progressFill" style="width:0%"></div></div>
@@ -168,6 +193,7 @@
   <script>
     // SETTINGS
     const GACHA_COOLDOWN_MINUTES = 20;
+    const GACHA_ANIMATION_DURATION_MS = 2000; // Durasi animasi (2 detik)
     const STORAGE_KEY = 'lastGachaData_allcases_v2';
 
     // STUDY CASES (sudah ada, trimmed for brevity in code area but kept full above)
@@ -633,6 +659,9 @@ c. final.mp4 → pemilik: read; grup: read; selainnya: read.
     const hideOverlayBtn = document.getElementById('hideOverlay');
     const stopTimerBtn = document.getElementById('stopTimer');
     let justPicked = null;
+    
+    // VARIABEL BARU UNTUK SPINNER
+    const gachaSpinner = document.getElementById('gachaSpinner'); 
 
     if(gachaBtn){
       gachaBtn.addEventListener('click', ()=>{
@@ -644,25 +673,57 @@ c. final.mp4 → pemilik: read; grup: read; selainnya: read.
             return;
           }
         }
-        const randomIdx = Math.floor(Math.random()*studyCases.length);
-        const random = studyCases[randomIdx];
-        justPicked = { id: randomIdx+1, desc: random };
-        overlayTitle.textContent = `Study Case #${justPicked.id}`;
-        overlaySubtitle.textContent = 'Ringkasan study case yang kamu dapatkan.';
-        overlaySummary.innerHTML = formatRawToHTML(justPicked.desc);
-        // extract any "Salah satu user ..." lines to highlight expiry info
-        const expiryLines = justPicked.desc.split('\n').filter(l=>/masa berlaku password|masa berlaku kata sandi|expiry|masa berlaku password-nya/i.test(l));
-        overlayPermsShort.innerHTML = expiryLines.length ? expiryLines.map(l=>`<div style="padding:6px 4px;border-bottom:1px dashed rgba(255,255,255,0.02)">${escapeHtml(l.trim())}</div>`).join('') : '<div class="desc-par">Tidak ada catatan expiry khusus.</div>';
-        startGachaLockBtn && (startGachaLockBtn.style.display = 'block');
-        hideOverlayBtn && (hideOverlayBtn.style.display = 'inline-block');
-        stopTimerBtn && (stopTimerBtn.style.display = 'none');
-        const overlayTimerBig = document.getElementById('overlayTimerBig');
-        const overlayProgress = document.getElementById('overlayProgress');
-        if(overlayTimerBig) overlayTimerBig.textContent = '--:--';
-        if(overlayProgress) overlayProgress.style.width = '0%';
+
+        // 1. TAMPILKAN OVERLAY DAN MULAI ANIMASI
+        // Sembunyikan semua konten hasil GACHA terlebih dahulu
+        overlayTitle.textContent = '... Mencari Study Case ...';
+        overlaySubtitle.textContent = 'Memutar Dadu Keberuntungan...';
+        overlaySummary.innerHTML = '<div class="desc-par">Mohon tunggu sebentar.</div>';
+        overlayPermsShort.innerHTML = '';
+        startGachaLockBtn && (startGachaLockBtn.style.display = 'none');
+        hideOverlayBtn && (hideOverlayBtn.style.display = 'none');
+        
+        gachaSpinner.style.display = 'block'; // Tampilkan spinner
+        gachaSpinner.classList.add('is-spinning'); // Mulai putaran
+        gachaBtn.disabled = true; // Nonaktifkan tombol utama
+        gachaBtn.textContent = '⏳ ROLLING...';
+        
         postOverlay.style.display = 'flex';
         postOverlay.setAttribute('aria-hidden','false');
-        setTimeout(()=> startGachaLockBtn && startGachaLockBtn.focus(), 80);
+
+
+        // 2. TUNDA EKSEKUSI (DELAY)
+        setTimeout(() => {
+            
+            // 3. HENTIKAN ANIMASI DAN TAMPILKAN HASIL
+            gachaSpinner.style.display = 'none'; // Sembunyikan spinner
+            gachaSpinner.classList.remove('is-spinning'); // Hentikan putaran
+            gachaBtn.disabled = false;
+            gachaBtn.textContent = '🎲 GACHA';
+            
+            // --- LOGIKA INTI GACHA ---
+            const randomIdx = Math.floor(Math.random()*studyCases.length);
+            const random = studyCases[randomIdx];
+            justPicked = { id: randomIdx+1, desc: random };
+            overlayTitle.textContent = `Study Case #${justPicked.id}`;
+            overlaySubtitle.textContent = 'Ringkasan study case yang kamu dapatkan.';
+            overlaySummary.innerHTML = formatRawToHTML(justPicked.desc);
+            // extract any "Salah satu user ..." lines to highlight expiry info
+            const expiryLines = justPicked.desc.split('\n').filter(l=>/masa berlaku password|masa berlaku kata sandi|expiry|masa berlaku password-nya/i.test(l));
+            overlayPermsShort.innerHTML = expiryLines.length ? expiryLines.map(l=>`<div style="padding:6px 4px;border-bottom:1px dashed rgba(255,255,255,0.02)">${escapeHtml(l.trim())}</div>`).join('') : '<div class="desc-par">Tidak ada catatan expiry khusus.</div>';
+            startGachaLockBtn && (startGachaLockBtn.style.display = 'block');
+            hideOverlayBtn && (hideOverlayBtn.style.display = 'inline-block');
+            stopTimerBtn && (stopTimerBtn.style.display = 'none');
+            const overlayTimerBig = document.getElementById('overlayTimerBig');
+            const overlayProgress = document.getElementById('overlayProgress');
+            if(overlayTimerBig) overlayTimerBig.textContent = '--:--';
+            if(overlayProgress) overlayProgress.style.width = '0%';
+            
+            // Fokuskan tombol MULAI setelah hasil muncul
+            setTimeout(()=> startGachaLockBtn && startGachaLockBtn.focus(), 80);
+            // --- LOGIKA INTI GACHA SELESAI ---
+            
+        }, GACHA_ANIMATION_DURATION_MS); // Menggunakan durasi 2000ms (2 detik)
       });
     }
 
