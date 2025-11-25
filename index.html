@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Study Case Gacha — Semua 8 Kasus (Bahasa Indonesia)</title>
+  <title>POSTEST JUDUL 3 PRAKTIKUM SISTEM OPERASI</title>
   <style>
     :root{
       --bg:#071024;
@@ -69,7 +69,7 @@
   <div class="wrap">
     <header>
       <div>
-        <h1>Study Case Gacha — 8 Kasus (Bahasa Indonesia)</h1>
+        <h1>POSTEST JUDUL 3 PRAKTIKUM SISTEM OPERASI</h1>
         <div style="color:#9fbdf4;font-size:13px;margin-top:6px">Klik "GACHA" untuk mendapatkan study case acak. Klik kartu untuk lihat detail.</div>
       </div>
       <div class="controls" role="toolbar" aria-label="kontrol">
@@ -77,8 +77,6 @@
           <button id="gachaBtn" type="button">🎲 GACHA</button>
           <span id="gachaTimer" style="font-size:13px;color:#9fbdf4;min-width:80px;text-align:center"></span>
         </div>
-        <button class="secondary" id="pickAgain" type="button">Pilih lagi</button>
-        <button class="secondary" id="exportSelected" type="button">Ekspor JSON</button>
         <button class="secondary" id="openPermGuide" type="button">Panduan Semua</button>
       </div>
     </header>
@@ -98,7 +96,6 @@
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <h3 id="modalTitle">Judul</h3>
         <div style="display:flex;gap:8px">
-          <button class="secondary" id="copyBtn" type="button">Salin</button>
           <button id="closeModal" type="button">Tutup</button>
         </div>
       </div>
@@ -113,7 +110,6 @@
       <div style="display:flex;justify-content:space-between;align-items:center">
         <h3>Daftar Semua Study Case</h3>
         <div>
-          <button class="secondary" id="copyGuide" type="button">Salin Semua</button>
           <button id="closeGuide" type="button">Tutup</button>
         </div>
       </div>
@@ -127,7 +123,6 @@
   <div class="modalWrap" id="copyModal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3>Salin (manual)</h3>
         <div><button id="closeCopy" type="button">Tutup</button></div>
       </div>
       <div class="steps copyModalContent">
@@ -162,7 +157,7 @@
         <div class="overlayControls">
           <button id="startGachaLock" class="bigBtn" style="background:var(--accent);color:#04243a">MULAI</button>
           <button id="hideOverlay" class="secondary">Sembunyikan (tetap jalan)</button>
-          <button id="stopTimer" class="secondary">Berhenti (batalkan)</button>
+          <button id="stopTimer" class="secondary" style="display:none">Berhenti (batalkan)</button>
         </div>
 
         <div style="margin-top:8px" class="mutedSmall">Timer aktif setelah menekan MULAI. Sembunyikan untuk melihat dashboard — timer tetap berjalan.</div>
@@ -171,111 +166,241 @@
   </div>
 
   <script>
-    // jika mau pakai preview image nanti, path di history:
-    // const PREVIEW_IMAGE = '/mnt/data/Screenshot 2025-11-24 151011.png';
-
     // SETTINGS
     const GACHA_COOLDOWN_MINUTES = 20;
     const STORAGE_KEY = 'lastGachaData_allcases_v2';
 
-    // STUDY CASES (format {id, title, raw} — ISI sesuai permintaan)
-    const studyCases = [
+    // STUDY CASES (sudah ada, trimmed for brevity in code area but kept full above)
+const studyCases = [
 `Kasus:
-Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk sebuah proyek bernama ProjectX. Dalam proyek ini dibutuhkan:
-● Direktori utama ProjectX yang berisi 2 subdirektori: usersetup dan workdir.
-● Tiga grup kolaborasi: Dev, QA, dan Prod.
-● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
-● Di dalam workdir dibuat tiga file (misal fileA.sh, fileB.txt, fileC.log) yang akan diatur izin aksesnya sesuai kebutuhan:
-a. fileA.sh → pemilik: read, write, execute; grup: read, execute; selainnya: read.
-b. fileB.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
-c. fileC.log → pemilik: read, write, execute; grup & lainnya: tidak ada akses.
-● Salah satu user dari grup Dev diatur agar masa berlaku password-nya berakhir setelah 15 hari.
-● Seluruh isi ProjectX kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk proyek pengembangan aplikasi web. Dalam proyek ini dibutuhkan:
+● Direktori utama WebApp yang berisi 3 subdirektori: src, config, logs.
+● Tiga grup kolaborasi: Dev, Ops, Sec.
+● Enam pengguna: dev1, dev2, ops1, ops2, sec1, sec2.
+● Di dalam src dibuat tiga file (app.js, routes.txt, run.sh):
+a. app.js → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. routes.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. run.sh → pemilik: read, write, execute; grup: read, execute; selainnya: read.
+● Salah satu user dari grup Ops (ops1) diatur agar masa berlaku password-nya berakhir setelah 14 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk ops1.`,
 
 `Kasus:
-Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk sebuah projek penelitian drone. Dalam proyek ini dibutuhkan:
-● Direktori utama DroneLab yang berisi 3 subdirektori: firmware, data, logs.
-● Tiga grup kolaborasi: DevTeam, PilotTeam, AnalystTeam.
-● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
-● Di dalam data dibuat tiga file contoh (core.sh, flight.csv, test.log) yang akan diatur izin aksesnya sebagai contoh kebutuhan nyata:
-a. core.sh → pemilik: read, write, execute; grup: read, write; selainnya: tidak ada akses.
-b. flight.csv → pemilik: read, write; grup: read; selainnya: tidak ada akses.
-c. test.log → pemilik: read, write; grup: read; selainnya: tidak ada akses.
-● Salah satu user dari grup PilotTeam diatur agar masa berlaku password-nya berakhir setelah 20 hari.
-● Seluruh isi DroneLab kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+Seorang administrator diminta menyiapkan direktori kerja untuk project analisis data. Dalam proyek ini dibutuhkan:
+● Direktori utama DataLab yang berisi 3 subdirektori: raw, scripts, reports.
+● Tiga grup: Ingest, Analyst, Report.
+● Enam pengguna: ingest1, ingest2, analyst1, analyst2, report1, report2.
+● Di dalam scripts dibuat file (etl.py, analyze.sh, debug.log):
+a. etl.py → pemilik: read, write, execute; grup: read, execute; selainnya: tidak ada akses.
+b. analyze.sh → pemilik: read, write, execute; grup: read; selainnya: tidak ada akses.
+c. debug.log → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu user dari grup Analyst (analyst2) diatur masa berlaku password 20 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk analyst2.`,
 
 `Kasus:
-Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk pusat insiden keamanan siber. Dalam proyek ini dibutuhkan:
-● Direktori utama IncidentCenter yang berisi 3 subdirektori: incident, analysis, report.
-● Tiga grup kolaborasi: Responder, Forensic, Manager.
-● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
-● Di dalam incident dan analysis dibuat dua file utama (incident/case001.txt, analysis/findings.txt):
-a. incident/case001.txt → pemilik: read, write; grup: read, write (hanya anggota Responder); selainnya: tidak ada akses.
-b. analysis/findings.txt → pemilik: read, write; grup: read, write (hanya anggota Forensic); selainnya: tidak ada akses.
-c. report/ → direktori publik: pemilik & grup: baca, eksekusi; selainnya: baca.
-● Salah satu user dari grup Forensic diatur agar masa berlaku password-nya berakhir setelah 12 hari.
-● Seluruh isi IncidentCenter kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+Seorang admin diperlukan men-setup lingkungan development mobile. Dalam proyek ini dibutuhkan:
+● Direktori utama MobileDev yang berisi 3 subdirektori: sdk, project, build.
+● Tiga grup: AndroidTeam, iOSTeam, QA.
+● Enam pengguna: and1, and2, ios1, ios2, qa1, qa2.
+● Di dalam project dibuat file (build.gradle, app.apk, notes.md):
+a. build.gradle → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. app.apk → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. notes.md → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu user AndroidTeam (and1) diberi expiry 18 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk and1.`,
 
 `Kasus:
-Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk sistem otomasi pabrik. Dalam proyek ini dibutuhkan:
-● Direktori utama SmartFactory yang berisi 3 subdirektori: sensor, control, maintenance.
-● Tiga grup kolaborasi: SensorTeam, ControlTeam, MaintTeam.
-● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
-● Di dalam control dan maintenance dibuat tiga file contoh (temp.txt, robot.cfg, maint.log):
-a. temp.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
-b. robot.cfg → pemilik: read, write; grup: read; selainnya: tidak ada akses.
-c. maint.log → pemilik: read, write; grup & lain: tidak ada akses.
-● Salah satu user dari grup ControlTeam diatur agar masa berlaku password-nya berakhir setelah 30 hari.
-● Seluruh isi SmartFactory kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+Seorang admin diminta menyiapkan server CI/CD. Dalam proyek ini dibutuhkan:
+● Direktori utama CICD yang berisi 3 subdirektori: jobs, secrets, artifacts.
+● Tiga grup: Builders, SecretsTeam, Release.
+● Enam pengguna: build1, build2, sec1, sec2, rel1, rel2.
+● Di dalam jobs dibuat file (pipeline.yml, deploy.sh, last.log):
+a. pipeline.yml → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. deploy.sh → pemilik: read, write, execute; grup: read, execute; selainnya: read.
+c. last.log → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu user Release (rel2) diatur expiry 22 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk rel2.`,
 
 `Kasus:
-Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk server editing media. Dalam proyek ini dibutuhkan:
-● Direktori utama MediaStudio yang berisi 3 subdirektori: raw, edit, export.
-● Tiga grup kolaborasi: Editor, Renderer, Producer.
-● Enam pengguna: beberapa user untuk editing dan rendering (2 per grup, username bebas).
-● Di dalam raw, edit, export dibuat tiga file contoh (footage.mp4, timeline.edt, final.mp4):
-a. footage.mp4 → pemilik: read, write; grup: read; selainnya: tidak ada akses.
-b. timeline.edt → pemilik: read, write; grup: read, write; selainnya: tidak ada akses.
-c. final.mp4 → pemilik: read; grup: read; selainnya: read.
-● Salah satu user dari grup Editor diatur agar masa berlaku password-nya berakhir setelah 25 hari.
-● Seluruh isi MediaStudio kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+Seorang admin diminta menyiapkan direktori untuk layanan monitoring. Dalam proyek ini dibutuhkan:
+● Direktori utama Monitor yang berisi 3 subdirektori: agents, configs, alerts.
+● Tiga grup: Agents, Ops, Viewers.
+● Enam pengguna: agent1, agent2, ops1, ops2, view1, view2.
+● Di dalam configs dibuat file (agent.conf, thresholds.txt, errors.log):
+a. agent.conf → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. thresholds.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. errors.log → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu user Agents (agent2) expiry 12 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk agent2.`,
 
 `Kasus:
-Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk server rekam medis rumah sakit. Dalam proyek ini dibutuhkan:
-● Direktori utama HosData yang berisi 3 subdirektori: patients, doctors, finance.
-● Tiga grup kolaborasi: MedTeam, DocTeam, FinTeam.
-● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
-● Di dalam patients, doctors, finance dibuat tiga file contoh (list.txt, schedule.txt, salary.csv):
-a. list.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
-b. schedule.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
-c. salary.csv → pemilik: read, write; grup & lain: tidak ada akses.
-● Salah satu user dari grup FinTeam diatur agar masa berlaku password-nya berakhir setelah 18 hari.
-● Seluruh isi HosData kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+Seorang administrator diminta menyiapkan direktori untuk proyek IoT. Dalam proyek ini dibutuhkan:
+● Direktori utama IoTNet yang berisi 3 subdirektori: devices, firmware, telemetry.
+● Tiga grup: DeviceTeam, FirmwareTeam, DataTeam.
+● Enam pengguna: deva1, deva2, firm1, firm2, data1, data2.
+● Di devices dibuat file (sensor.py, calibrate.sh, output.log):
+a. sensor.py → pemilik: read, write, execute; grup: read, execute; selainnya: tidak ada akses.
+b. calibrate.sh → pemilik: read, write, execute; grup: read; selainnya: tidak ada akses.
+c. output.log → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu user FirmwareTeam (firm1) expiry 16 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk firm1.`,
 
 `Kasus:
-Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk platform e-learning. Dalam proyek ini dibutuhkan:
+Seorang admin diminta menyiapkan direktori untuk proyek keamanan jaringan. Dalam proyek ini dibutuhkan:
+● Direktori utama NetSec yang berisi 3 subdirektori: captures, tools, reports.
+● Tiga grup: RedTeam, BlueTeam, Audit.
+● Enam pengguna: red1, red2, blue1, blue2, audit1, audit2.
+● Di captures dibuat file (sniff.pcap, summary.txt, notes.log):
+a. sniff.pcap → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. summary.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. notes.log → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu RedTeam (red2) expiry 10 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk red2.`,
+
+`Kasus:
+Seorang admin diminta menyiapkan direktori untuk proyek CAD desain. Dalam proyek ini dibutuhkan:
+● Direktori utama CADLab yang berisi 3 subdirektori: models, renders, assets.
+● Tiga grup: Designers, Renders, AssetMgr.
+● Enam pengguna: des1, des2, ren1, ren2, asset1, asset2.
+● Di models dibuat file (chair.obj, table.obj, readme.md):
+a. chair.obj → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. table.obj → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. readme.md → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu Designers (des1) expiry 24 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk des1.`,
+
+`Kasus:
+Seorang admin diminta menyiapkan direktori untuk layanan email internal. Dalam proyek ini dibutuhkan:
+● Direktori utama MailSrv yang berisi 3 subdirektori: inbox, config, archive.
+● Tiga grup: MailAdmin, Support, Auditor.
+● Enam pengguna: mail1, mail2, sup1, sup2, aud1, aud2.
+● Di inbox dibuat file (welcome.txt, bounce.log, forward.sh):
+a. welcome.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. bounce.log → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. forward.sh → pemilik: read, write, execute; grup: read, execute; selainnya: read.
+● Salah satu MailAdmin (mail2) expiry 15 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk mail2.`,
+
+`Kasus:
+Seorang admin diminta menyiapkan direktori untuk tim dokumentasi. Dalam proyek ini dibutuhkan:
+● Direktori utama Docs yang berisi 3 subdirektori: drafts, final, assets.
+● Tiga grup: Writers, Editors, Publish.
+● Enam pengguna: w1, w2, ed1, ed2, pub1, pub2.
+● Di drafts dibuat file (chapter1.md, notes.txt, edit.log):
+a. chapter1.md → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. notes.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. edit.log → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu Editors (ed2) expiry 11 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk ed2.`,
+
+`Kasus:
+Seorang administrator diminta menyiapkan direktori kerja untuk sistem arsip digital. Dalam proyek ini dibutuhkan:
+● Direktori utama DigiArchive yang berisi 3 subdirektori: upload, storage, backup.
+● Tiga grup kolaborasi: Uploader, Archivist, BackupTeam.
+● Enam pengguna: up1, up2, arch1, arch2, bup1, bup2.
+● Di storage dibuat file (doc1.pdf, doc2.pdf, index.txt):
+a. doc1.pdf → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. doc2.pdf → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. index.txt → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu BackupTeam (bup1) expiry 25 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk bup1.`,
+
+`Kasus:
+Seorang admin diminta menyiapkan direktori kerja untuk laboratorium robotika. Dalam proyek ini dibutuhkan:
+● Direktori utama RoboLab yang berisi 3 subdirektori: scripts, test, output.
+● Tiga grup kolaborasi: DevTeam, TestTeam, Hardware.
+● Enam pengguna: rdev1, rdev2, rtest1, rtest2, rhw1, rhw2.
+● Di scripts dibuat file (control.py, sensor.cfg, log.txt):
+a. control.py → pemilik: read, write, execute; grup: read; selainnya: tidak ada akses.
+b. sensor.cfg → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. log.txt → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu TestTeam (rtest2) expiry 10 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk rtest2.`,
+
+`Kasus:
+Seorang admin diminta menyiapkan direktori untuk sistem e-learning. Dalam proyek ini dibutuhkan:
 ● Direktori utama ElearnSys yang berisi 3 subdirektori: lectures, assignments, grading.
-● Tiga grup kolaborasi: Teacher, Student, Assessor.
-● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
-● Di dalam assignments dan grading dibuat tiga file contoh (week1.pdf, task1.docx, grade.txt):
+● Tiga grup: Teacher, Student, Assessor.
+● Enam pengguna: t1, t2, s1, s2, a1, a2.
+● Di assignments dibuat file (week1.pdf, task1.docx, grade.txt):
 a. week1.pdf → pemilik: read, write; grup: read; selainnya: tidak ada akses.
 b. task1.docx → pemilik: read, write; grup: read; selainnya: tidak ada akses.
 c. grade.txt → pemilik: read, write; grup & lain: tidak ada akses.
-● Salah satu user dari grup Assessor diatur agar masa berlaku password-nya berakhir setelah 10 hari.
-● Seluruh isi ElearnSys kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`,
+● Salah satu Assessor (a2) expiry 10 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk a2.`,
 
 `Kasus:
-Seorang administrator sistem diminta menyiapkan direktori kerja dan setup akses untuk pengembangan game (GameBuild). Dalam proyek ini dibutuhkan:
+Seorang admin diminta menyiapkan direktori kerja untuk platform e-commerce kecil. Dalam proyek ini dibutuhkan:
+● Direktori utama ShopSys yang berisi 3 subdirektori: frontend, backend, payment.
+● Tiga grup: Dev, Ops, Finance.
+● Enam pengguna: shopdev1, shopdev2, shopops1, shopops2, fin1, fin2.
+● Di backend dibuat file (app.py, config.ini, payments.log):
+a. app.py → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. config.ini → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. payments.log → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu Finance (fin1) expiry 18 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk fin1.`,
+
+`Kasus:
+Seorang administrator diminta menyiapkan direktori untuk pusat riset iklim. Dalam proyek ini dibutuhkan:
+● Direktori utama ClimateLab yang berisi 3 subdirektori: data, models, results.
+● Tiga grup: Analyst, Researcher, Report.
+● Enam pengguna: c_anal1, c_anal2, c_res1, c_res2, c_rep1, c_rep2.
+● Di data dibuat file (temp.csv, rain.csv, summary.txt):
+a. temp.csv → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. rain.csv → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. summary.txt → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu Researcher (c_res1) expiry 28 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk c_res1.`,
+
+`Kasus:
+Seorang admin diminta menyiapkan direktori untuk sistem logistik. Dalam proyek ini dibutuhkan:
+● Direktori utama LogiSys yang berisi 3 subdirektori: orders, delivery, report.
+● Tiga grup: OrderTeam, DeliveryTeam, ReportTeam.
+● Enam pengguna: ord1, ord2, del1, del2, r1, r2.
+● Di delivery dibuat file (track.csv, vehicle.log, summary.txt):
+a. track.csv → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. vehicle.log → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. summary.txt → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu DeliveryTeam (del1) expiry 16 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk del1.`,
+
+`Kasus:
+Seorang administrator diminta menyiapkan direktori kerja untuk server rekam medis rumah sakit. Dalam proyek ini dibutuhkan:
+● Direktori utama HosData yang berisi 3 subdirektori: patients, doctors, finance.
+● Tiga grup: MedTeam, DocTeam, FinTeam.
+● Enam pengguna: med1, med2, doc1, doc2, fin1, fin2.
+● Di patients/doctors/finance dibuat file (list.txt, schedule.txt, salary.csv):
+a. list.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. schedule.txt → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+c. salary.csv → pemilik: read, write; grup & lain: tidak ada akses.
+● Salah satu FinTeam (fin2) expiry 18 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk fin2.`,
+
+`Kasus:
+Seorang admin diminta menyiapkan direktori untuk pengembangan game. Dalam proyek ini dibutuhkan:
 ● Direktori utama GameBuild yang berisi 3 subdirektori: source, assets, build.
-● Tiga grup kolaborasi: Coder, Artist, Builder.
-● Enam pengguna: masing-masing grup memiliki 2 anggota (username bebas).
-● Di dalam subdirektori dibuat tiga file contoh (main.cpp, character.png, release.exe) yang akan diatur izin aksesnya sebagai contoh kebutuhan nyata:
+● Tiga grup: Coder, Artist, Builder.
+● Enam pengguna: gcode1, gcode2, gart1, gart2, gbuild1, gbuild2.
+● Di subdirektori dibuat file (main.cpp, character.png, release.exe):
 a. main.cpp → pemilik: read, write; grup: read; selainnya: tidak ada akses.
 b. character.png → pemilik: read, write; grup: read; selainnya: tidak ada akses.
 c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tidak ada akses.
-● Salah satu user dari grup Builder diatur agar masa berlaku password-nya berakhir setelah 20 hari.
-● Seluruh isi GameBuild kemudian diverifikasi dengan menampilkan struktur direktori dan izin file.`
-    ];
+● Salah satu Builder (gbuild1) expiry 20 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk gbuild1.`,
+
+`Kasus:
+Seorang administrator diminta menyiapkan direktori untuk server editing media. Dalam proyek ini dibutuhkan:
+● Direktori utama MediaStudio yang berisi 3 subdirektori: raw, edit, export.
+● Tiga grup: Editor, Renderer, Producer.
+● Enam pengguna: ed1, ed2, ren1, ren2, prod1, prod2.
+● Di raw/edit/export dibuat file (footage.mp4, timeline.edt, final.mp4):
+a. footage.mp4 → pemilik: read, write; grup: read; selainnya: tidak ada akses.
+b. timeline.edt → pemilik: read, write; grup: read, write; selainnya: tidak ada akses.
+c. final.mp4 → pemilik: read; grup: read; selainnya: read.
+● Salah satu Editor (ed1) expiry 25 hari.
+● Verifikasi: tampilkan struktur direktori dan izin file, serta periksa masa berlaku password untuk ed1.`
+];
+
 
     // render grid
     const grid = document.getElementById('grid');
@@ -393,11 +518,13 @@ c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tida
       modal.setAttribute('aria-hidden','false');
       setTimeout(()=> { area.focus(); area.select(); }, 80);
     }
-    document.getElementById('closeCopy').addEventListener('click', ()=> {
+    const closeCopyBtn = document.getElementById('closeCopy');
+    if(closeCopyBtn) closeCopyBtn.addEventListener('click', ()=> {
       document.getElementById('copyModal').style.display='none';
       document.getElementById('copyModal').setAttribute('aria-hidden','true');
     });
-    document.getElementById('selectAll').addEventListener('click', ()=>{ document.getElementById('copyArea').select(); });
+    const selectAllBtn = document.getElementById('selectAll');
+    if(selectAllBtn) selectAllBtn.addEventListener('click', ()=>{ const a=document.getElementById('copyArea'); if(a) a.select(); });
 
     async function safeCopy(text){
       try {
@@ -410,22 +537,33 @@ c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tida
       return false;
     }
 
-    document.getElementById('copyBtn').addEventListener('click', async ()=>{
-      if(!picked){ alert('Belum ada study case yang dipilih.'); return }
-      const ok = await safeCopy(picked.description);
-      if(ok) alert('Tersalin ke clipboard');
-    });
+    // NOTE: the UI originally referenced copyBtn, copyGuide, pickAgain, exportSelected.
+    // Those elements are optional in the DOM. Attach handlers only if present (guard).
+    const copyBtn = document.getElementById('copyBtn');
+    if(copyBtn){
+      copyBtn.addEventListener('click', async ()=>{
+        if(!picked){ alert('Belum ada study case yang dipilih.'); return }
+        const ok = await safeCopy(picked.description);
+        if(ok) alert('Tersalin ke clipboard');
+      });
+    }
 
     // permission guide (shows raw list)
     const permGuide = document.getElementById('permGuide');
     const guideContent = document.getElementById('guideContent');
-    document.getElementById('openPermGuide').addEventListener('click', ()=>{
-      guideContent.innerText = studyCases.join('\n\n---\n\n');
-      permGuide.style.display = 'flex';
-      permGuide.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('closeGuide').addEventListener('click', ()=> { permGuide.style.display='none'; permGuide.setAttribute('aria-hidden','true'); });
-    document.getElementById('copyGuide').addEventListener('click', async ()=>{
+    const openPermGuideBtn = document.getElementById('openPermGuide');
+    if(openPermGuideBtn){
+      openPermGuideBtn.addEventListener('click', ()=>{
+        guideContent.innerText = studyCases.join('\n\n---\n\n');
+        permGuide.style.display = 'flex';
+        permGuide.setAttribute('aria-hidden','false');
+      });
+    }
+    const closeGuideBtn = document.getElementById('closeGuide');
+    if(closeGuideBtn) closeGuideBtn.addEventListener('click', ()=> { permGuide.style.display='none'; permGuide.setAttribute('aria-hidden','true'); });
+
+    const copyGuideBtn = document.getElementById('copyGuide');
+    if(copyGuideBtn) copyGuideBtn.addEventListener('click', async ()=>{
       const all = studyCases.join('\n\n---\n\n');
       const ok = await safeCopy(all);
       if(ok) alert('Semua study case tersalin');
@@ -438,7 +576,7 @@ c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tida
     let countdownEndsAt = null;
     let countdownRemaining = 0;
 
-    function getLastGachaData(){ const v = localStorage.getItem(STORAGE_KEY); return v ? JSON.parse(v) : null; }
+    function getLastGachaData(){ const v = localStorage.getItem(STORAGE_KEY); try{ return v ? JSON.parse(v) : null; }catch(e){ return null; } }
     function setLastGachaData(obj){ localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); }
     function clearLastGachaData(){ localStorage.removeItem(STORAGE_KEY); }
     function msRemainingFrom(timestamp){ const cooldownMs = GACHA_COOLDOWN_MINUTES * 60 * 1000; const elapsed = Date.now() - timestamp; return Math.max(0, cooldownMs - elapsed); }
@@ -449,8 +587,7 @@ c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tida
       countdownRemaining = ms;
       countdownEndsAt = Date.now() + ms;
       updateAllDisplays(countdownRemaining);
-      gachaBtn.disabled = true;
-      gachaBtn.setAttribute('aria-disabled','true');
+      if(gachaBtn){ gachaBtn.disabled = true; gachaBtn.setAttribute('aria-disabled','true'); }
 
       countdownInterval = setInterval(()=>{
         const rem = Math.max(0, countdownEndsAt - Date.now());
@@ -460,11 +597,12 @@ c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tida
           countdownInterval = null;
           countdownRemaining = 0;
           countdownEndsAt = null;
-          gachaTimerLabel.textContent = '';
-          gachaBtn.disabled = false;
-          gachaBtn.removeAttribute('aria-disabled');
-          document.getElementById('overlayTimerBig').textContent = '--:--';
-          document.getElementById('overlayProgress').style.width = '0%';
+          if(gachaTimerLabel) gachaTimerLabel.textContent = '';
+          if(gachaBtn){ gachaBtn.disabled = false; gachaBtn.removeAttribute('aria-disabled'); }
+          const overlayTimerBig = document.getElementById('overlayTimerBig');
+          const overlayProgress = document.getElementById('overlayProgress');
+          if(overlayTimerBig) overlayTimerBig.textContent = '--:--';
+          if(overlayProgress) overlayProgress.style.width = '0%';
           clearLastGachaData();
         } else {
           updateAllDisplays(rem);
@@ -474,7 +612,7 @@ c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tida
 
     function updateAllDisplays(ms){
       const txt = formatMsAsMMSS(ms);
-      gachaTimerLabel.textContent = txt;
+      if(gachaTimerLabel) gachaTimerLabel.textContent = txt;
       const totalMs = GACHA_COOLDOWN_MINUTES * 60 * 1000;
       const pct = Math.max(0, Math.min(100, ((totalMs - ms) / totalMs) * 100));
       const overlayTimerBig = document.getElementById('overlayTimerBig');
@@ -496,66 +634,77 @@ c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tida
     const stopTimerBtn = document.getElementById('stopTimer');
     let justPicked = null;
 
-    gachaBtn.addEventListener('click', ()=>{
-      const data = getLastGachaData();
-      if(data && data.ts){
-        const rem = msRemainingFrom(data.ts);
-        if(rem > 0){
-          alert(`Sudah pernah GACHA. Coba lagi setelah ${formatMsAsMMSS(rem)}`);
-          return;
+    if(gachaBtn){
+      gachaBtn.addEventListener('click', ()=>{
+        const data = getLastGachaData();
+        if(data && data.ts){
+          const rem = msRemainingFrom(data.ts);
+          if(rem > 0){
+            alert(`Sudah pernah GACHA. Coba lagi setelah ${formatMsAsMMSS(rem)}`);
+            return;
+          }
         }
-      }
-      const randomIdx = Math.floor(Math.random()*studyCases.length);
-      const random = studyCases[randomIdx];
-      justPicked = { id: randomIdx+1, desc: random };
-      overlayTitle.textContent = `Study Case #${justPicked.id}`;
-      overlaySubtitle.textContent = 'Ringkasan study case yang kamu dapatkan.';
-      overlaySummary.innerHTML = formatRawToHTML(justPicked.desc);
-      // extract any "Salah satu user ..." lines to highlight expiry info
-      const expiryLines = justPicked.desc.split('\n').filter(l=>/masa berlaku password|masa berlaku kata sandi|masa berlaku password-nya/i.test(l));
-      overlayPermsShort.innerHTML = expiryLines.length ? expiryLines.map(l=>`<div style="padding:6px 4px;border-bottom:1px dashed rgba(255,255,255,0.02)">${escapeHtml(l.trim())}</div>`).join('') : '<div class="desc-par">Tidak ada catatan expiry khusus.</div>';
-      startGachaLockBtn.style.display = 'block';
-      hideOverlayBtn.style.display = 'inline-block';
-      stopTimerBtn.style.display = 'none';
-      document.getElementById('overlayTimerBig').textContent = '--:--';
-      document.getElementById('overlayProgress').style.width = '0%';
-      postOverlay.style.display = 'flex';
-      postOverlay.setAttribute('aria-hidden','false');
-      setTimeout(()=> startGachaLockBtn.focus(), 80);
-    });
+        const randomIdx = Math.floor(Math.random()*studyCases.length);
+        const random = studyCases[randomIdx];
+        justPicked = { id: randomIdx+1, desc: random };
+        overlayTitle.textContent = `Study Case #${justPicked.id}`;
+        overlaySubtitle.textContent = 'Ringkasan study case yang kamu dapatkan.';
+        overlaySummary.innerHTML = formatRawToHTML(justPicked.desc);
+        // extract any "Salah satu user ..." lines to highlight expiry info
+        const expiryLines = justPicked.desc.split('\n').filter(l=>/masa berlaku password|masa berlaku kata sandi|expiry|masa berlaku password-nya/i.test(l));
+        overlayPermsShort.innerHTML = expiryLines.length ? expiryLines.map(l=>`<div style="padding:6px 4px;border-bottom:1px dashed rgba(255,255,255,0.02)">${escapeHtml(l.trim())}</div>`).join('') : '<div class="desc-par">Tidak ada catatan expiry khusus.</div>';
+        startGachaLockBtn && (startGachaLockBtn.style.display = 'block');
+        hideOverlayBtn && (hideOverlayBtn.style.display = 'inline-block');
+        stopTimerBtn && (stopTimerBtn.style.display = 'none');
+        const overlayTimerBig = document.getElementById('overlayTimerBig');
+        const overlayProgress = document.getElementById('overlayProgress');
+        if(overlayTimerBig) overlayTimerBig.textContent = '--:--';
+        if(overlayProgress) overlayProgress.style.width = '0%';
+        postOverlay.style.display = 'flex';
+        postOverlay.setAttribute('aria-hidden','false');
+        setTimeout(()=> startGachaLockBtn && startGachaLockBtn.focus(), 80);
+      });
+    }
 
-    startGachaLockBtn.addEventListener('click', ()=>{
-      if(!justPicked) return;
-      selectCard(justPicked.id);
-      const now = Date.now();
-      setLastGachaData({ ts: now, id: justPicked.id });
-      const cooldownMs = GACHA_COOLDOWN_MINUTES * 60 * 1000;
-      startCountdown(cooldownMs);
-      startGachaLockBtn.style.display = 'none';
-      stopTimerBtn.style.display = 'inline-block';
-      justPicked = null;
-    });
+    if(startGachaLockBtn){
+      startGachaLockBtn.addEventListener('click', ()=>{
+        if(!justPicked) return;
+        selectCard(justPicked.id);
+        const now = Date.now();
+        setLastGachaData({ ts: now, id: justPicked.id });
+        const cooldownMs = GACHA_COOLDOWN_MINUTES * 60 * 1000;
+        startCountdown(cooldownMs);
+        startGachaLockBtn.style.display = 'none';
+        stopTimerBtn && (stopTimerBtn.style.display = 'inline-block');
+        justPicked = null;
+      });
+    }
 
-    hideOverlayBtn.addEventListener('click', ()=>{
-      postOverlay.style.display = 'none';
-      postOverlay.setAttribute('aria-hidden','true');
-    });
+    if(hideOverlayBtn){
+      hideOverlayBtn.addEventListener('click', ()=>{
+        postOverlay.style.display = 'none';
+        postOverlay.setAttribute('aria-hidden','true');
+      });
+    }
 
-    stopTimerBtn.addEventListener('click', ()=>{
-      if(!confirm('Hentikan timer? Ini akan membatalkan lock GACHA.')) return;
-      if(countdownInterval) clearInterval(countdownInterval);
-      countdownInterval = null;
-      countdownRemaining = 0;
-      countdownEndsAt = null;
-      gachaTimerLabel.textContent = '';
-      gachaBtn.disabled = false;
-      gachaBtn.removeAttribute('aria-disabled');
-      document.getElementById('overlayTimerBig').textContent = '--:--';
-      document.getElementById('overlayProgress').style.width = '0%';
-      startGachaLockBtn.style.display = 'block';
-      stopTimerBtn.style.display = 'none';
-      clearLastGachaData();
-    });
+    if(stopTimerBtn){
+      stopTimerBtn.addEventListener('click', ()=>{
+        if(!confirm('Hentikan timer? Ini akan membatalkan lock GACHA.')) return;
+        if(countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = null;
+        countdownRemaining = 0;
+        countdownEndsAt = null;
+        if(gachaTimerLabel) gachaTimerLabel.textContent = '';
+        if(gachaBtn){ gachaBtn.disabled = false; gachaBtn.removeAttribute('aria-disabled'); }
+        const overlayTimerBig = document.getElementById('overlayTimerBig');
+        const overlayProgress = document.getElementById('overlayProgress');
+        if(overlayTimerBig) overlayTimerBig.textContent = '--:--';
+        if(overlayProgress) overlayProgress.style.width = '0%';
+        startGachaLockBtn && (startGachaLockBtn.style.display = 'block');
+        stopTimerBtn.style.display = 'none';
+        clearLastGachaData();
+      });
+    }
 
     postOverlay.addEventListener('click', (e)=>{
       if(e.target === postOverlay){
@@ -564,34 +713,39 @@ c. release.exe → pemilik: read, write, execute; grup: execute; selainnya: tida
       }
     });
 
-    // pick again
-    document.getElementById('pickAgain').addEventListener('click', ()=>{
-      if(!picked){
-        gachaBtn.click();
-        return;
-      }
-      let poolIdxs = studyCases.map((_,i)=>i);
-      const currentIdx = picked.id - 1;
-      poolIdxs = poolIdxs.filter(i=>i !== currentIdx);
-      if(poolIdxs.length === 0) poolIdxs = studyCases.map((_,i)=>i);
-      const random = poolIdxs[Math.floor(Math.random()*poolIdxs.length)];
-      selectCard(random+1);
-      openModal(random+1);
-    });
+    // optional pickAgain/exportSelected handlers: guard if present
+    const pickAgainBtn = document.getElementById('pickAgain');
+    if(pickAgainBtn){
+      pickAgainBtn.addEventListener('click', ()=>{
+        if(!picked){
+          gachaBtn && gachaBtn.click();
+          return;
+        }
+        let poolIdxs = studyCases.map((_,i)=>i);
+        const currentIdx = picked.id - 1;
+        poolIdxs = poolIdxs.filter(i=>i !== currentIdx);
+        if(poolIdxs.length === 0) poolIdxs = studyCases.map((_,i)=>i);
+        const random = poolIdxs[Math.floor(Math.random()*poolIdxs.length)];
+        selectCard(random+1);
+        openModal(random+1);
+      });
+    }
 
-    // export selected JSON
-    document.getElementById('exportSelected').addEventListener('click', ()=>{
-      if(!picked){ alert('Belum ada study case terpilih.'); return }
-      const blob = new Blob([JSON.stringify({ id:picked.id, raw:picked.description }, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `studycase-${picked.id}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
+    const exportSelectedBtn = document.getElementById('exportSelected');
+    if(exportSelectedBtn){
+      exportSelectedBtn.addEventListener('click', ()=>{
+        if(!picked){ alert('Belum ada study case terpilih.'); return }
+        const blob = new Blob([JSON.stringify({ id:picked.id, raw:picked.description }, null, 2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `studycase-${picked.id}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+    }
 
     // backdrop close and ESC
     document.getElementById('modal').addEventListener('click', (e)=>{ if(e.target===document.getElementById('modal')) closeModalUI() });
